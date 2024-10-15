@@ -6,27 +6,23 @@
         <groupId>ru.practicum</groupId>
         <artifactId>explore-with-me</artifactId>
         <version>0.0.1-SNAPSHOT</version>
-        <relativePath>${env.EWM_PARENT_POM:-../pom.xml}</relativePath> <!-- lookup parent from repository -->
+        <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
-    <artifactId>explore-with-me-statistics-service</artifactId>
+    <artifactId>explore-with-me-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <packaging>pom</packaging>
-
-    <name>explore-with-me-statistics</name>
-    <description>explore-with-me-statistics</description>
-
-    <modules>
-        <module>explore-with-me-statistics-api</module>
-        <module>explore-with-me-statistics-client</module>
-        <module>explore-with-me-statistics-contract</module>
-    </modules>
+    <name>explore-with-me-service</name>
 
     <properties>
         <java.version>21</java.version>
     </properties>
-    <dependencies>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

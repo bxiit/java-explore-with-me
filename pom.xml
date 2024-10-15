@@ -19,6 +19,7 @@
 
 	<modules>
 		<module>explore-with-me-statistics-service</module>
+		<module>explore-with-me-service</module>
 	</modules>
 
 	<properties>

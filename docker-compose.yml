@@ -24,14 +24,14 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: ewm_statistics
 
-  #  ewm-service:
-  #    container_name: ewm_service
-  #    build:
-  #      context: .
-  #    ports:
-  #      - "8080:8080"
-  #    depends_on:
-  #      - ewm-db
+  ewm-service:
+    container_name: ewm_service
+    build:
+      context: ./explore-with-me-service
+    ports:
+      - "8080:8080"
+    depends_on:
+      - ewm-db
 
   ewm-db:
     container_name: ewm_service_db
