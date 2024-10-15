@@ -13,18 +13,20 @@ import ru.practicum.explorewithme.statistics.contract.model.ViewStats;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class StatisticsServiceImpl implements StatisticsService {
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm");
     private final StatisticsRepository statisticsRepository;
 
     @Override
     public void save(EndpointHit request) {
         log.info("Save endpoint hit for app:{}", request.getApp());
-        Endpoint hit = EndpointMapper.mapToEntity(request);
+        Endpoint hit = EndpointMapper.mapToEntity(request, parseStringToInstant(request.getTimestamp()));
         statisticsRepository.save(hit);
     }
 
@@ -43,5 +45,9 @@ public class StatisticsServiceImpl implements StatisticsService {
 
     private Instant toInstant(LocalDateTime ldt) {
         return ldt.toInstant(ZoneOffset.UTC);
+    }
+
+    private Instant parseStringToInstant(String timestamp) {
+        return toInstant(LocalDateTime.parse(timestamp, DATE_TIME_FORMATTER));
     }
 }

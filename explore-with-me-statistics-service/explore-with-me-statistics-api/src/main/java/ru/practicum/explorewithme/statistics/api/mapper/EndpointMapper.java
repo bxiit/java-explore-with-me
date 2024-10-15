@@ -8,7 +8,7 @@ import java.time.Instant;
 public class EndpointMapper {
 
     public static Endpoint
-    mapToEntity(EndpointHit request) {
-        return new Endpoint(null, request.getApp(), request.getUri(), request.getIp(), Instant.now());
+    mapToEntity(EndpointHit request, Instant timestamp) {
+        return new Endpoint(null, request.getApp(), request.getUri(), request.getIp(), timestamp);
     }
 }

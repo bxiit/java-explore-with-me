@@ -5,8 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.Instant;
-
 @Data
 @Builder
 @NoArgsConstructor
@@ -15,5 +13,5 @@ public class EndpointHit {
     private String app;
     private String uri;
     private String ip;
-    private Instant timestamp;
+    private String timestamp;
 }
