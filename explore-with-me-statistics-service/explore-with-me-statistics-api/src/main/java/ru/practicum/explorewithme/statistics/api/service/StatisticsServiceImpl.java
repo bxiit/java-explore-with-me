@@ -3,6 +3,7 @@ package ru.practicum.explorewithme.statistics.api.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.practicum.explorewithme.statistics.api.dto.GetViewStatsRequest;
 import ru.practicum.explorewithme.statistics.api.entity.Endpoint;
 import ru.practicum.explorewithme.statistics.api.mapper.EndpointMapper;
 import ru.practicum.explorewithme.statistics.api.repository.StatisticsRepository;
@@ -28,13 +29,13 @@ public class StatisticsServiceImpl implements StatisticsService {
     }
 
     @Override
-    public List<ViewStats> get(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) {
-        if (uris.isEmpty()) {
-            return statisticsRepository.findAllWithoutUri(toInstant(start), toInstant(end), unique).stream()
+    public List<ViewStats> get(GetViewStatsRequest request) {
+        if (request.getUris().isEmpty()) {
+            return statisticsRepository.findAllWithoutUri(toInstant(request.getStart()), toInstant(request.getEnd()), request.isUnique()).stream()
                     .map(vs -> new ViewStats(vs.getApp(), vs.getUri(), vs.getHits()))
                     .toList();
         } else {
-            return statisticsRepository.findAllWithUri(toInstant(start), toInstant(end), uris, unique).stream()
+            return statisticsRepository.findAllWithUri(toInstant(request.getStart()), toInstant(request.getEnd()), request.getUris(), request.isUnique()).stream()
                     .map(vs -> new ViewStats(vs.getApp(), vs.getUri(), vs.getHits()))
                     .toList();
         }

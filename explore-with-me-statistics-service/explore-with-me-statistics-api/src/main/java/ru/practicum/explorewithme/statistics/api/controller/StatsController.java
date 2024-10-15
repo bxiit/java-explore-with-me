@@ -29,6 +29,6 @@ public class StatsController {
     public List<ViewStats> getStats(
             GetViewStatsRequest request
     ) {
-        return statisticsService.get(request.getStart(), request.getEnd(), request.getUris(), request.isUnique());
+        return statisticsService.get(request);
     }
 }
