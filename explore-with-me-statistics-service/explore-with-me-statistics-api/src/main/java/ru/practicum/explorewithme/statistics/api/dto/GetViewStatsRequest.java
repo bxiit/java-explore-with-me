@@ -9,9 +9,9 @@ import java.util.List;
 
 @Data
 public class GetViewStatsRequest {
-    @DateTimeFormat(pattern = "yyyy.MM.dd HH:mm")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     LocalDateTime start;
-    @DateTimeFormat(pattern = "yyyy.MM.dd HH:mm")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     LocalDateTime end;
     List<String> uris = new ArrayList<>();
     boolean unique;
