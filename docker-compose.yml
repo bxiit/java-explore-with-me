@@ -1,8 +1,8 @@
 version: '3.8'
 
 services:
-  stats-server-1:
-    container_name: ewm_statistics-2
+  stats-server:
+    container_name: ewm_statistics
     build:
       context: ./explore-with-me-statistics-service/explore-with-me-statistics-api
     depends_on:
