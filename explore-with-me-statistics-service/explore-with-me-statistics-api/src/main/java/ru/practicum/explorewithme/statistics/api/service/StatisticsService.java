@@ -4,7 +4,6 @@ import ru.practicum.explorewithme.statistics.api.dto.GetViewStatsRequest;
 import ru.practicum.explorewithme.statistics.contract.model.EndpointHit;
 import ru.practicum.explorewithme.statistics.contract.model.ViewStats;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public interface StatisticsService {
