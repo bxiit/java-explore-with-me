@@ -9,7 +9,6 @@
     </parent>
 
     <artifactId>explore-with-me-statistics-service</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>explore-with-me-statistics</name>
@@ -20,13 +19,6 @@
         <module>explore-with-me-statistics-client</module>
         <module>explore-with-me-statistics-contract</module>
     </modules>
-
-    <properties>
-        <java.version>21</java.version>
-    </properties>
-    <dependencies>
-
-    </dependencies>
 
     <build>
         <plugins>

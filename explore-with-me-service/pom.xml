@@ -6,16 +6,11 @@
         <groupId>ru.practicum</groupId>
         <artifactId>explore-with-me</artifactId>
         <version>0.0.1-SNAPSHOT</version>
-        <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
     <artifactId>explore-with-me-service</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
     <name>explore-with-me-service</name>
-
-    <properties>
-        <java.version>21</java.version>
-    </properties>
+    <packaging>pom</packaging>
 
     <dependencies>
         <dependency>
