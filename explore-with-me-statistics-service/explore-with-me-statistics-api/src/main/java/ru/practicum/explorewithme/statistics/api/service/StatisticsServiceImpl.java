@@ -50,7 +50,7 @@ public class StatisticsServiceImpl implements StatisticsService {
     }
 
     private List<String> addPercentSymbolForEach(Collection<String> uris) {
-        return uris.stream().map(uri -> "%" + uri + "%").toList();
+        return uris.stream().map(uri -> uri + "%").toList();
     }
 
     private Instant toInstant(LocalDateTime ldt) {
