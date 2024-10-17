@@ -13,8 +13,8 @@ public interface StatisticsRepository extends JpaRepository<Endpoint, Long> {
             e.uri as uri,
             count(e.id) as hits
             from endpoint e
-            where (e.timestamp between :start and :end)
-            and (e.uri in :uris)
+            where (e.timestamp between :start and :end
+            and e.uri in :uris)
             group by e.app, e.uri
             having (:unique is false or count(e.id) = 1)
             order by hits desc
