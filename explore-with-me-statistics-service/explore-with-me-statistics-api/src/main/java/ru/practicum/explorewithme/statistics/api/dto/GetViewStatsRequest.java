@@ -4,8 +4,6 @@ import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Data
 public class GetViewStatsRequest {
@@ -13,6 +11,6 @@ public class GetViewStatsRequest {
     LocalDateTime start;
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     LocalDateTime end;
-    List<String> uris = new ArrayList<>();
+    String[] uris;
     boolean unique;
 }

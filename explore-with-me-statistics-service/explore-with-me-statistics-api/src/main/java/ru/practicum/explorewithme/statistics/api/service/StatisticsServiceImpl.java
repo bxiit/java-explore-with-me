@@ -14,6 +14,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -32,21 +33,20 @@ public class StatisticsServiceImpl implements StatisticsService {
 
     @Override
     public List<ViewStats> get(GetViewStatsRequest request) {
-        if (request.getUris().isEmpty()) {
-            return statisticsRepository.findAllWithoutUri(toInstant(request.getStart()), toInstant(request.getEnd()), request.isUnique()).stream()
-                    .map(vs -> new ViewStats(vs.getApp(), vs.getUri(), vs.getHits()))
-                    .toList();
-        } else {
-
-            return statisticsRepository.findAllWithUri(
-                            toInstant(request.getStart()),
-                            toInstant(request.getEnd()),
-                            request.getUris().toArray(String[]::new),
-                            request.isUnique()
-                    ).stream()
-                    .map(vs -> new ViewStats(vs.getApp(), vs.getUri(), vs.getHits()))
-                    .toList();
+        List<ViewStats> stats = new ArrayList<>();
+        if (!request.isUnique() && request.getUris() == null) {
+            stats = statisticsRepository.findByStartAndEnd(toInstant(request.getStart()), toInstant(request.getEnd()));
         }
+        if (!request.isUnique() && request.getUris() != null) {
+            stats = statisticsRepository.findWithUris(toInstant(request.getStart()), toInstant(request.getEnd()), request.getUris());
+        }
+        if (request.isUnique() && request.getUris() == null) {
+            stats = statisticsRepository.findUniqueIp(toInstant(request.getStart()), toInstant(request.getEnd()));
+        }
+        if (request.isUnique() && request.getUris() != null) {
+            stats = statisticsRepository.findUniqueIpWithUris(toInstant(request.getStart()), toInstant(request.getEnd()), request.getUris());
+        }
+        return stats;
     }
 
     private Instant toInstant(LocalDateTime ldt) {
