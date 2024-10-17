@@ -13,10 +13,10 @@ public interface StatisticsRepository extends JpaRepository<Endpoint, Long> {
             e.uri as uri,
             count(e.id) as hits
             from endpoint e
-            where (e.timestamp between ?1 and ?2)
-            and (e.uri ilike any (array[?3]))
+            where (e.timestamp between :start and :end)
+            and (e.uri in :uris)
             group by e.app, e.uri
-            having (?4 is false or count(e.id) = 1)
+            having (:unique is false or count(e.id) = 1)
             order by hits desc
             """, nativeQuery = true)
     List<ViewStatsProj> findAllWithUri(Instant start, Instant end, String[] uris, boolean unique);
@@ -26,9 +26,9 @@ public interface StatisticsRepository extends JpaRepository<Endpoint, Long> {
             e.uri as uri,
             count(e.id) as hits
             from Endpoint e
-            where (e.timestamp between ?1 and ?2)
+            where (e.timestamp between :start and :end)
             group by e.app, e.uri
-            having (?3 is false or count(e.id) = 1)
+            having (:unique is false or count(e.id) = 1)
             order by hits desc
             """)
     List<ViewStatsProj> findAllWithoutUri(Instant start, Instant end, boolean unique);
