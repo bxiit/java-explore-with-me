@@ -37,6 +37,7 @@ public class StatisticsServiceImpl implements StatisticsService {
                     .map(vs -> new ViewStats(vs.getApp(), vs.getUri(), vs.getHits()))
                     .toList();
         } else {
+
             return statisticsRepository.findAllWithUri(
                             toInstant(request.getStart()),
                             toInstant(request.getEnd()),
