@@ -1,4 +1,4 @@
-package ru.practicum.explorewithme.statistics.contract.model;
+package ru.practicum.explorewithme.statistics.contract.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

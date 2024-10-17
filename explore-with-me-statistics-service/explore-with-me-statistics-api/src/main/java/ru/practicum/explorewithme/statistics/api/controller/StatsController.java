@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.explorewithme.statistics.api.dto.GetViewStatsRequest;
 import ru.practicum.explorewithme.statistics.api.service.StatisticsService;
-import ru.practicum.explorewithme.statistics.contract.model.EndpointHit;
-import ru.practicum.explorewithme.statistics.contract.model.ViewStats;
+import ru.practicum.explorewithme.statistics.contract.dto.EndpointHit;
+import ru.practicum.explorewithme.statistics.contract.dto.ViewStats;
 
 import java.util.List;
 

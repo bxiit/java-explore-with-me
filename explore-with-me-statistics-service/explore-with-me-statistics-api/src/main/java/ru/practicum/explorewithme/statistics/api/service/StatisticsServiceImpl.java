@@ -7,8 +7,8 @@ import ru.practicum.explorewithme.statistics.api.dto.GetViewStatsRequest;
 import ru.practicum.explorewithme.statistics.api.entity.Endpoint;
 import ru.practicum.explorewithme.statistics.api.mapper.EndpointMapper;
 import ru.practicum.explorewithme.statistics.api.repository.StatisticsRepository;
-import ru.practicum.explorewithme.statistics.contract.model.EndpointHit;
-import ru.practicum.explorewithme.statistics.contract.model.ViewStats;
+import ru.practicum.explorewithme.statistics.contract.dto.EndpointHit;
+import ru.practicum.explorewithme.statistics.contract.dto.ViewStats;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
