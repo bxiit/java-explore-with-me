@@ -9,14 +9,25 @@ import java.time.Instant;
 
 @Data
 public class UpdateEventAdminRequest {
+
+    @Size(min = 20, max = 2000)
     private String annotation;
+
     private Long category;
+
+    @Size(min = 20, max = 7000)
     private String description;
+
     private Instant eventDate;
+
     private Location location;
+
     private Boolean paid;
+
     private Integer participantLimit;
+
     private Boolean requestModeration;
+
     private StateActionAdmin stateAction;
 
     @Size(max = 120, min = 3)

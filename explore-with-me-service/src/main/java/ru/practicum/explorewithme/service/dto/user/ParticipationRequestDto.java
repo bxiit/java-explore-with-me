@@ -1,4 +1,4 @@
-package ru.practicum.explorewithme.service.dto;
+package ru.practicum.explorewithme.service.dto.user;
 
 import lombok.Data;
 import java.time.Instant;

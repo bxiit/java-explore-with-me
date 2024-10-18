@@ -1,7 +1,7 @@
 package ru.practicum.explorewithme.service.dto.event;
 
 import lombok.Data;
-import ru.practicum.explorewithme.service.dto.ParticipationRequestDto;
+import ru.practicum.explorewithme.service.dto.user.ParticipationRequestDto;
 
 import java.util.List;
 
