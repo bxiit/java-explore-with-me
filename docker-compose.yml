@@ -1,14 +1,44 @@
+version: '3.8'
+
 services:
   stats-server:
+    container_name: ewm_statistics
+    build:
+      context: ./explore-with-me-statistics-service/explore-with-me-statistics-api
+    depends_on:
+      - stats-db
     ports:
       - "9090:9090"
+    environment:
+      'spring.datasource.username': postgres
+      'spring.datasource.password': postgres
+      'spring.datasource.url': jdbc:postgresql://stats-db:5432/ewm_statistics
 
   stats-db:
+    container_name: ewm_statistics_db
     image: postgres:16.1
+    ports:
+      - "6666:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ewm_statistics
 
   ewm-service:
+    container_name: ewm_service
+    build:
+      context: ./explore-with-me-service
     ports:
       - "8080:8080"
+    depends_on:
+      - ewm-db
 
   ewm-db:
+    container_name: ewm_service_db
     image: postgres:16.1
+    ports:
+      - "5555:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ewm_service
