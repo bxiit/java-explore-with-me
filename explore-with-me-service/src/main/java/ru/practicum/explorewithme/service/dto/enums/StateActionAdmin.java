@@ -1,6 +1,6 @@
 package ru.practicum.explorewithme.service.dto.enums;
 
-public enum StateAction {
+public enum StateActionAdmin {
     PUBLISH_EVENT,
     REJECT_EVENT
 }

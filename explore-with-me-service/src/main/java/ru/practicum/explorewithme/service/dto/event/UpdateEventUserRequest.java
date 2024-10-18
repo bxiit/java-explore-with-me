@@ -2,6 +2,7 @@ package ru.practicum.explorewithme.service.dto.event;
 
 import lombok.Data;
 import ru.practicum.explorewithme.service.dto.Location;
+import ru.practicum.explorewithme.service.dto.enums.StateActionUser;
 
 import java.time.Instant;
 
@@ -15,6 +16,6 @@ public class UpdateEventUserRequest {
     private Boolean paid;
     private Integer participantLimit;
     private Boolean requestModeration;
-    private String stateAction;
+    private StateActionUser stateAction;
     private String title;
 }
