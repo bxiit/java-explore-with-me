@@ -7,8 +7,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @Entity
 @Builder
@@ -18,5 +16,5 @@ import java.util.List;
 public class Compilation extends BaseEntity {
     private Boolean pinned;
     private String title;
-    private List<Event> events;
+//    private List<Event> events;
 }

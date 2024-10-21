@@ -32,6 +32,10 @@ services:
       - "8080:8080"
     depends_on:
       - ewm-db
+    environment:
+      'spring.datasource.username': postgres
+      'spring.datasource.password': postgres
+      'spring.datasource.url': jdbc:postgresql://ewm-db:5432/ewm
 
   ewm-db:
     container_name: ewm_service_db
@@ -41,4 +45,4 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: ewm_service
+      POSTGRES_DB: ewm

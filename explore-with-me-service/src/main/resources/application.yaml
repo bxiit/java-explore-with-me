@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: explore-with-me-service
+  jackson:
+    time-zone: UTC
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: validate
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  datasource:
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5555}/${DB_NAME:postgres}?currentSchema=ewm
+    driver-class-name: org.postgresql.Driver
+  liquibase:
+    default-schema: ewm
+    enabled: false
+  sql:
+    init:
+      mode: never

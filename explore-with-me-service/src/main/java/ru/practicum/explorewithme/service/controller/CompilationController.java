@@ -22,7 +22,7 @@ public class CompilationController {
             @RequestParam Boolean pinned,
             @RequestParam int from,
             @RequestParam(defaultValue = "10") int size
-            ) {
+    ) {
         return compilationService.get(pinned, from, size);
     }
 

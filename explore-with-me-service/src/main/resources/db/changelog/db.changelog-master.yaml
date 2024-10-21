@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - include:
+      file: db/changelog/changeset/V0001__create_users_table.sql
+  - include:
+      file: db/changelog/changeset/V0002__create_category_table.sql
+  - include:
+      file: db/changelog/changeset/V0003__create_compilation_table.sql
+  - include:
+      file: db/changelog/changeset/V0004_create_event_table.sql
+  - include:
+      file: db/changelog/changeset/V0005__create-participation-table.sql

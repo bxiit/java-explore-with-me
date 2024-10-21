@@ -1,4 +1,4 @@
-package ru.practicum.explorewithme.service.dto.enums;
+package ru.practicum.explorewithme.service.enums;
 
 public enum EventRequestStatus {
     CONFIRMED,

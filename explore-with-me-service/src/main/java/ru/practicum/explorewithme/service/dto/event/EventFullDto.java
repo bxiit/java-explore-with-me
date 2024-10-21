@@ -2,6 +2,7 @@ package ru.practicum.explorewithme.service.dto.event;
 
 import lombok.Data;
 import ru.practicum.explorewithme.service.dto.Location;
+import ru.practicum.explorewithme.service.enums.EventState;
 import ru.practicum.explorewithme.service.dto.user.UserShortDto;
 import ru.practicum.explorewithme.service.dto.category.CategoryDto;
 
@@ -22,7 +23,7 @@ public class EventFullDto {
     private Integer participantLimit = 0; // Значение 0 - означает отсутствие ограничения
     private Instant publishedOn;
     private Boolean requestModeration = true; // Нужна ли пре-модерация заявок на участие
-    private String state;
+    private EventState state;
     private String title;
     private Long views;
 }

@@ -3,7 +3,7 @@ package ru.practicum.explorewithme.service.dto.event;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import ru.practicum.explorewithme.service.dto.Location;
-import ru.practicum.explorewithme.service.dto.enums.StateActionUser;
+import ru.practicum.explorewithme.service.enums.UpdateEventUserAction;
 
 import java.time.Instant;
 
@@ -28,7 +28,7 @@ public class UpdateEventUserRequest {
 
     private Boolean requestModeration;
 
-    private StateActionUser stateAction;
+    private UpdateEventUserAction stateAction;
 
     @Size(min = 3, max = 120)
     private String title;
