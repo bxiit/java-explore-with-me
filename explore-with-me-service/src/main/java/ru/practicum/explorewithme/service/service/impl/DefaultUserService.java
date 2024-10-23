@@ -1,4 +1,4 @@
-package ru.practicum.explorewithme.service.service;
+package ru.practicum.explorewithme.service.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +16,7 @@ import ru.practicum.explorewithme.service.dto.event.UpdateEventUserRequest;
 import ru.practicum.explorewithme.service.entity.User;
 import ru.practicum.explorewithme.service.exception.NotFoundException;
 import ru.practicum.explorewithme.service.repository.UserRepository;
+import ru.practicum.explorewithme.service.service.EventService;
 
 import java.util.List;
 
@@ -23,8 +24,9 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class DefaultUserService implements UserService {
-    private final EventService eventService;
     private final UserRepository userRepository;
+    private final EventService eventService;
+    private final RequestService requestService;
 
     @Override
     @ResponseStatus(HttpStatus.CREATED)
@@ -52,7 +54,7 @@ public class DefaultUserService implements UserService {
     }
 
     @Override
-    public ParticipationRequestDto getRequests(Long userId, Long eventId) {
+    public List<ParticipationRequestDto> getRequests(Long userId, Long eventId) {
         User user = fetchUser(userId);
         return eventService.getRequests(user, eventId);
     }

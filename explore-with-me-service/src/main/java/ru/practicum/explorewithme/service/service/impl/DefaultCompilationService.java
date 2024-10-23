@@ -1,4 +1,4 @@
-package ru.practicum.explorewithme.service.service;
+package ru.practicum.explorewithme.service.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -8,6 +8,7 @@ import ru.practicum.explorewithme.service.dto.compilation.CompilationDto;
 import ru.practicum.explorewithme.service.exception.NotFoundException;
 import ru.practicum.explorewithme.service.mapper.CompilationMapper;
 import ru.practicum.explorewithme.service.repository.CompilationRepository;
+import ru.practicum.explorewithme.service.service.CompilationService;
 
 import java.util.List;
 

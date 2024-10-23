@@ -10,13 +10,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.explorewithme.service.dto.request.ParticipationRequestDto;
 import ru.practicum.explorewithme.service.dto.event.EventFullDto;
 import ru.practicum.explorewithme.service.dto.event.EventRequestStatusUpdateRequest;
 import ru.practicum.explorewithme.service.dto.event.EventRequestStatusUpdateResult;
 import ru.practicum.explorewithme.service.dto.event.EventShortDto;
 import ru.practicum.explorewithme.service.dto.event.NewEventDto;
 import ru.practicum.explorewithme.service.dto.event.UpdateEventUserRequest;
+import ru.practicum.explorewithme.service.dto.request.ParticipationRequestDto;
 
 import java.util.List;
 
@@ -57,7 +57,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/events/{eventId}/requests")
-    public ParticipationRequestDto getRequests(
+    public List<ParticipationRequestDto> getRequests(
             @PathVariable("eventId") Long eventId,
             @PathVariable("userId") Long userId
     ) {
@@ -70,7 +70,7 @@ public class UserController {
             @PathVariable("eventId") Long eventId,
             @PathVariable("userId") Long userId,
             @RequestBody @Valid EventRequestStatusUpdateRequest request
-            ) {
+    ) {
         return userService.updateEventParticipationStatus(userId, eventId, request);
     }
 

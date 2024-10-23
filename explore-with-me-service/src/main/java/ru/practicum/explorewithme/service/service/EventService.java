@@ -21,7 +21,7 @@ public interface EventService {
 
     EventFullDto edit(User user, Long eventId, UpdateEventUserRequest request);
 
-    ParticipationRequestDto getRequests(User user, Long eventId);
+    List<ParticipationRequestDto> getRequests(User user, Long eventId);
 
     ParticipationRequestDto saveParticipationRequest(User user, Long eventId);
 
@@ -32,4 +32,6 @@ public interface EventService {
     ParticipationRequestDto cancelRequest(User user, Long requestId);
 
     List<EventShortDto> get(GetEventsRequest request);
+
+    EventFullDto get(Long id);
 }

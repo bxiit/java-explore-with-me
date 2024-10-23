@@ -1,6 +1,8 @@
 package ru.practicum.explorewithme.service.dto.event;
 
 import lombok.Data;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import ru.practicum.explorewithme.service.enums.SortBy;
 
 import java.time.Instant;
@@ -17,4 +19,8 @@ public class GetEventsRequest {
     private SortBy sort;
     private int from;
     private int size = 10;
+
+    public Pageable getPageable(){
+        return PageRequest.of(getFrom(), getSize(), getSort().getSort());
+    }
 }

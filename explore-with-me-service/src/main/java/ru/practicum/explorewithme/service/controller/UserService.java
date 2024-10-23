@@ -19,7 +19,7 @@ public interface UserService {
 
     EventFullDto edit(Long userId, Long eventId, UpdateEventUserRequest request);
 
-    ParticipationRequestDto getRequests(Long userId, Long eventId);
+    List<ParticipationRequestDto> getRequests(Long userId, Long eventId);
 
     ParticipationRequestDto saveParticipationRequest(Long userId, Long eventId);
 

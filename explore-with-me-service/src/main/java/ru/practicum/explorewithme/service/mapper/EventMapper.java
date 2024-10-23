@@ -20,10 +20,15 @@ import ru.practicum.explorewithme.service.entity.User;
 public interface EventMapper {
     EventShortDto toShortDto(Event event);
 
+    @Mapping(target = "state", ignore = true)
+    @Mapping(target = "views", ignore = true)
+    @Mapping(target = "compilation", ignore = true)
+    @Mapping(target = "publishedOn", ignore = true)
     @Mapping(target = "initiator", source = "user")
     @Mapping(target = "category", source = "category")
-    Event toEntity(User user, Category category, NewEventDto request);
-
+    @Mapping(target = "confirmedRequests", ignore = true)
+    Event toNewEvent(User user, Category category, NewEventDto request);
+    // gau eto gay
     @Mapping(target = "createdOn", source = "created")
     EventFullDto toFullDto(Event event);
 

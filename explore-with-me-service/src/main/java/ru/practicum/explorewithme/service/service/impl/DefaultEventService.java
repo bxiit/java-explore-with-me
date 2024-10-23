@@ -1,4 +1,4 @@
-package ru.practicum.explorewithme.service.service;
+package ru.practicum.explorewithme.service.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +28,8 @@ import ru.practicum.explorewithme.service.mapper.ParticipationRequestMapper;
 import ru.practicum.explorewithme.service.repository.CategoryRepository;
 import ru.practicum.explorewithme.service.repository.EventRepository;
 import ru.practicum.explorewithme.service.repository.ParticipationRequestRepository;
-import ru.practicum.explorewithme.service.repository.UserRepository;
+import ru.practicum.explorewithme.service.service.EventService;
+import ru.practicum.explorewithme.service.specs.EventSpecifications;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -41,7 +42,6 @@ import static org.springframework.http.HttpStatus.FORBIDDEN;
 @RequiredArgsConstructor
 public class DefaultEventService implements EventService {
     private final EventRepository eventRepository;
-    private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final ParticipationRequestRepository requestRepository;
     private final EventMapper eventMapper;
@@ -51,7 +51,8 @@ public class DefaultEventService implements EventService {
     @Transactional
     public EventFullDto save(User user, NewEventDto request) {
         Category category = fetchCategory(request.getCategory());
-        Event event = eventMapper.toEntity(user, category, request);
+        Event event = eventMapper.toNewEvent(user, category, request);
+        event.setState(EventState.PENDING);
         event = eventRepository.save(event);
         return eventMapper.toFullDto(event);
     }
@@ -74,14 +75,8 @@ public class DefaultEventService implements EventService {
             throw new ConflictException("Participant limit is reached");
         }
 
-        ParticipationRequest participationRequest;
-        if (!event.getRequestModeration()) {
-            participationRequest = new ParticipationRequest(event, user, Instant.now(), ParticipationStatus.APPROVED);
-        } else {
-            participationRequest = new ParticipationRequest(event, user, Instant.now(), ParticipationStatus.PENDING);
-        }
-
-        participationRequest = requestRepository.save(participationRequest);
+        var participantStatus = event.getRequestModeration() ? ParticipationStatus.PENDING : ParticipationStatus.APPROVED;
+        var participationRequest = requestRepository.save(new ParticipationRequest(event, user, Instant.now(), participantStatus));
 
         return ParticipationRequestDto.builder()
                 .event(participationRequest.getEvent().getId())
@@ -89,10 +84,6 @@ public class DefaultEventService implements EventService {
                 .created(participationRequest.getCreated())
                 .status(participationRequest.getStatus())
                 .build();
-    }
-
-    private boolean isLimitReached(Event event) {
-        return !(event.getParticipantLimit() > event.getConfirmedRequests());
     }
 
     @Override
@@ -146,41 +137,22 @@ public class DefaultEventService implements EventService {
     }
 
     @Override
+    // todo: save in stats service
     public List<EventShortDto> get(GetEventsRequest request) {
         List<Specification<Event>> specifications = getSpecification(request);
         return eventRepository.findAll(
                         Specification.allOf(specifications),
-                        PageRequest.of(request.getFrom(), request.getSize(), request.getSort().getSort())
+                        request.getPageable()
                 ).stream().map(eventMapper::toShortDto)
                 .toList();
     }
 
-    private List<Specification<Event>> getSpecification(GetEventsRequest request) {
-        ArrayList<Specification<Event>> specifications = new ArrayList<>();
-        if (request.getText() != null) {
-            Specification<Event> specification = EventRepository.text(request.getText());
-            specifications.add(specification);
-        }
-        if (request.getPaid() != null) {
-            Specification<Event> specification = EventRepository.paid(request.getPaid());
-            specifications.add(specification);
-        }
-        if (request.getStart() != null && request.getEnd() != null) {
-            Specification<Event> specification = EventRepository.startAndEnd(request.getStart(), request.getEnd());
-            specifications.add(specification);
-        } else {
-            Specification<Event> specification = EventRepository.defaultStartAndEnd();
-            specifications.add(specification);
-        }
-        if (request.isOnlyAvailable()) {
-            Specification<Event> specification = EventRepository.onlyAvailable();
-            specifications.add(specification);
-        }
-        if (request.getCategories() != null && !request.getCategories().isEmpty()) {
-            Specification<Event> specification = EventRepository.categories(request.getCategories());
-            specifications.add(specification);
-        }
-        return specifications;
+    @Override
+    // todo: save in stats service
+    public EventFullDto get(Long id) {
+        Event event = eventRepository.findByIdAndState(id, EventState.PUBLISHED)
+                .orElseThrow(() -> new NotFoundException(Event.class, id));
+        return eventMapper.toFullDto(event);
     }
 
     @Override
@@ -200,9 +172,11 @@ public class DefaultEventService implements EventService {
     }
 
     @Override // todo
-    public ParticipationRequestDto getRequests(User user, Long eventId) {
+    public List<ParticipationRequestDto> getRequests(User user, Long eventId) {
         Event event = fetchEvent(eventId);
-        return null;
+        return requestRepository.findAllByRequesterIdAndEventId(user.getId(), event.getId()).stream()
+                .map(requestMapper::toDto)
+                .toList();
     }
 
     @Override
@@ -239,5 +213,37 @@ public class DefaultEventService implements EventService {
         if (eventRequestsCount.equals(event.getConfirmedRequests())) {
             throw new ConflictException("The participant limit has been reached");
         }
+    }
+
+    private boolean isLimitReached(Event event) {
+        return !(event.getParticipantLimit() > event.getConfirmedRequests());
+    }
+
+    private List<Specification<Event>> getSpecification(GetEventsRequest request) {
+        ArrayList<Specification<Event>> specifications = new ArrayList<>();
+        if (request.getText() != null) {
+            Specification<Event> specification = EventSpecifications.text(request.getText());
+            specifications.add(specification);
+        }
+        if (request.getPaid() != null) {
+            Specification<Event> specification = EventSpecifications.paid(request.getPaid());
+            specifications.add(specification);
+        }
+        if (request.getStart() != null && request.getEnd() != null) {
+            Specification<Event> specification = EventSpecifications.startAndEnd(request.getStart(), request.getEnd());
+            specifications.add(specification);
+        } else {
+            Specification<Event> specification = EventSpecifications.defaultStartAndEnd();
+            specifications.add(specification);
+        }
+        if (request.isOnlyAvailable()) {
+            Specification<Event> specification = EventSpecifications.onlyAvailable();
+            specifications.add(specification);
+        }
+        if (request.getCategories() != null && !request.getCategories().isEmpty()) {
+            Specification<Event> specification = EventSpecifications.categories(request.getCategories());
+            specifications.add(specification);
+        }
+        return specifications;
     }
 }
