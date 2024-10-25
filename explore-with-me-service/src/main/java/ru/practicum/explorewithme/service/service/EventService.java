@@ -1,6 +1,8 @@
 package ru.practicum.explorewithme.service.service;
 
-import ru.practicum.explorewithme.service.dto.event.GetEventsRequest;
+import ru.practicum.explorewithme.service.dto.event.GetEventsAdminRequest;
+import ru.practicum.explorewithme.service.dto.event.GetEventsUserRequest;
+import ru.practicum.explorewithme.service.dto.event.UpdateEventAdminRequest;
 import ru.practicum.explorewithme.service.dto.request.ParticipationRequestDto;
 import ru.practicum.explorewithme.service.dto.event.EventFullDto;
 import ru.practicum.explorewithme.service.dto.event.EventRequestStatusUpdateRequest;
@@ -31,7 +33,11 @@ public interface EventService {
 
     ParticipationRequestDto cancelRequest(User user, Long requestId);
 
-    List<EventShortDto> get(GetEventsRequest request);
+    List<EventShortDto> get(GetEventsUserRequest request);
 
     EventFullDto get(Long id);
+
+    EventFullDto updateEvent(Long eventId, UpdateEventAdminRequest updateRequest);
+
+    List<EventFullDto> get(GetEventsAdminRequest request);
 }

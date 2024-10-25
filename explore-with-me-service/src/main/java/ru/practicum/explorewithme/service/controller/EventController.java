@@ -1,5 +1,6 @@
 package ru.practicum.explorewithme.service.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -7,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.explorewithme.service.dto.event.EventFullDto;
 import ru.practicum.explorewithme.service.dto.event.EventShortDto;
-import ru.practicum.explorewithme.service.dto.event.GetEventsRequest;
+import ru.practicum.explorewithme.service.dto.event.GetEventsUserRequest;
 import ru.practicum.explorewithme.service.service.EventService;
 
 import java.util.List;
@@ -20,7 +21,7 @@ public class EventController {
 
     @GetMapping
     public List<EventShortDto> get(
-            GetEventsRequest request
+            @Valid GetEventsUserRequest request
     ) {
         return eventService.get(request);
     }

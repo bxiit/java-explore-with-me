@@ -1,4 +1,4 @@
-package ru.practicum.explorewithme.service.controller;
+package ru.practicum.explorewithme.service.service;
 
 import ru.practicum.explorewithme.service.dto.request.ParticipationRequestDto;
 import ru.practicum.explorewithme.service.dto.event.EventFullDto;
@@ -7,6 +7,9 @@ import ru.practicum.explorewithme.service.dto.event.EventRequestStatusUpdateResu
 import ru.practicum.explorewithme.service.dto.event.EventShortDto;
 import ru.practicum.explorewithme.service.dto.event.NewEventDto;
 import ru.practicum.explorewithme.service.dto.event.UpdateEventUserRequest;
+import ru.practicum.explorewithme.service.dto.user.GetUsersAdminRequest;
+import ru.practicum.explorewithme.service.dto.user.NewUserRequest;
+import ru.practicum.explorewithme.service.dto.user.UserDto;
 
 import java.util.List;
 
@@ -28,4 +31,10 @@ public interface UserService {
     List<ParticipationRequestDto> getUserRequests(Long userId);
 
     ParticipationRequestDto cancelRequest(Long userId, Long requestId);
+
+    List<UserDto> get(GetUsersAdminRequest request);
+
+    UserDto saveNewUser(NewUserRequest request);
+
+    void deleteUser(Long userId);
 }

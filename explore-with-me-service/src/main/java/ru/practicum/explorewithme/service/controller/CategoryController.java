@@ -20,8 +20,8 @@ public class CategoryController {
 
     @GetMapping
     public List<CategoryDto> get(
-            @RequestParam("from") int from,
-            @RequestParam("size") int size
+            @RequestParam(value = "from", defaultValue = "0") Integer from,
+            @RequestParam(value = "size", defaultValue = "10") Integer size
     ) {
         return categoryService.get(from, size);
     }

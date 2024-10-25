@@ -4,7 +4,7 @@ import org.springframework.data.jpa.domain.Specification;
 import ru.practicum.explorewithme.service.entity.Event;
 
 import java.time.Instant;
-import java.util.List;
+import java.util.Collection;
 
 public class EventSpecifications {
     public static Specification<Event> text(String text) {
@@ -31,7 +31,11 @@ public class EventSpecifications {
         return (root, query, builder) -> builder.greaterThan(root.get("participantLimit"), root.get("confirmedRequests"));
     }
 
-    public static Specification<Event> categories(List<Long> categories) {
+    public static Specification<Event> categories(Collection<Long> categories) {
         return (root, query, builder) -> root.join("category").in(categories);
+    }
+
+    public static Specification<Event> users(Collection<Long> users) {
+        return (root, query, builder) -> root.join("initiator").in(users);
     }
 }

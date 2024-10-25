@@ -17,6 +17,7 @@ import ru.practicum.explorewithme.service.dto.event.EventShortDto;
 import ru.practicum.explorewithme.service.dto.event.NewEventDto;
 import ru.practicum.explorewithme.service.dto.event.UpdateEventUserRequest;
 import ru.practicum.explorewithme.service.dto.request.ParticipationRequestDto;
+import ru.practicum.explorewithme.service.service.UserService;
 
 import java.util.List;
 
@@ -29,8 +30,8 @@ public class UserController {
     @GetMapping("/{userId}/events")
     public List<EventShortDto> get(
             @PathVariable("userId") Long userId,
-            @RequestParam int from,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(value = "from", defaultValue = "0") Integer from,
+            @RequestParam(value = "size", defaultValue = "10") Integer size
     ) {
         return userService.get(userId, from, size);
     }

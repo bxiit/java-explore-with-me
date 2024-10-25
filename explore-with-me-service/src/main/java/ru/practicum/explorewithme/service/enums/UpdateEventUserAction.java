@@ -1,6 +1,18 @@
 package ru.practicum.explorewithme.service.enums;
 
-public enum UpdateEventUserAction {
-    SEND_TO_REVIEW,
-    CANCEL_REVIEW
+import ru.practicum.explorewithme.service.entity.Event;
+
+public enum UpdateEventUserAction implements UpdateEventAction {
+    SEND_TO_REVIEW {
+        @Override
+        public void updateEventState(Event event) {
+            event.setState(EventState.PENDING);
+        }
+    },
+    CANCEL_REVIEW {
+        @Override
+        public void updateEventState(Event event) {
+            event.setState(EventState.CANCELED);
+        }
+    }
 }

@@ -4,23 +4,26 @@ import lombok.Data;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import ru.practicum.explorewithme.service.enums.SortBy;
+import ru.practicum.explorewithme.service.validation.NotZeroLongId;
 
 import java.time.Instant;
 import java.util.List;
 
 @Data
-public class GetEventsRequest {
+public class GetEventsUserRequest {
     private String text;
+    @NotZeroLongId
     private List<Long> categories;
     private Boolean paid;
     private Instant start;
     private Instant end;
-    private boolean onlyAvailable = false;
+    private Boolean onlyAvailable = false;
     private SortBy sort;
-    private int from;
-    private int size = 10;
+    private Integer from = 0;
+    private Integer size = 10;
 
-    public Pageable getPageable(){
-        return PageRequest.of(getFrom(), getSize(), getSort().getSort());
+    public Pageable getPageable() {
+        return getSort() == null ? PageRequest.of(getFrom(), getSize())
+                : PageRequest.of(getFrom(), getSize(), getSort().getSort());
     }
 }

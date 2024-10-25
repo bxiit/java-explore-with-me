@@ -1,12 +1,13 @@
 package ru.practicum.explorewithme.service.entity;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
-import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,13 +19,14 @@ import ru.practicum.explorewithme.service.enums.EventState;
 import java.time.Instant;
 
 @Data
-@Builder
 @Entity
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class Event extends BaseEntity {
 
+    @Column(length = 2000)
     private String annotation;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -32,6 +34,7 @@ public class Event extends BaseEntity {
 
     private Integer confirmedRequests;
 
+    @Column(length = 7000)
     private String description;
 
     private Instant eventDate;
@@ -39,7 +42,7 @@ public class Event extends BaseEntity {
     @OneToOne(fetch = FetchType.LAZY)
     private User initiator;
 
-    @Transient
+    @Embedded
     private Location location;
 
     private Boolean paid;
@@ -56,6 +59,7 @@ public class Event extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private EventState state;
 
+    @Column(length = 120)
     private String title;
 
     private Long views;

@@ -4,19 +4,24 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import ru.practicum.explorewithme.service.controller.UserService;
-import ru.practicum.explorewithme.service.dto.request.ParticipationRequestDto;
 import ru.practicum.explorewithme.service.dto.event.EventFullDto;
 import ru.practicum.explorewithme.service.dto.event.EventRequestStatusUpdateRequest;
 import ru.practicum.explorewithme.service.dto.event.EventRequestStatusUpdateResult;
 import ru.practicum.explorewithme.service.dto.event.EventShortDto;
 import ru.practicum.explorewithme.service.dto.event.NewEventDto;
 import ru.practicum.explorewithme.service.dto.event.UpdateEventUserRequest;
+import ru.practicum.explorewithme.service.dto.request.ParticipationRequestDto;
+import ru.practicum.explorewithme.service.dto.user.GetUsersAdminRequest;
+import ru.practicum.explorewithme.service.dto.user.NewUserRequest;
+import ru.practicum.explorewithme.service.dto.user.UserDto;
 import ru.practicum.explorewithme.service.entity.User;
 import ru.practicum.explorewithme.service.exception.NotFoundException;
+import ru.practicum.explorewithme.service.mapper.UserMapper;
 import ru.practicum.explorewithme.service.repository.UserRepository;
 import ru.practicum.explorewithme.service.service.EventService;
+import ru.practicum.explorewithme.service.service.UserService;
 
 import java.util.List;
 
@@ -26,7 +31,7 @@ import java.util.List;
 public class DefaultUserService implements UserService {
     private final UserRepository userRepository;
     private final EventService eventService;
-    private final RequestService requestService;
+    private final UserMapper userMapper;
 
     @Override
     @ResponseStatus(HttpStatus.CREATED)
@@ -84,8 +89,32 @@ public class DefaultUserService implements UserService {
         return eventService.cancelRequest(user, requestId);
     }
 
+    @Override
+    public List<UserDto> get(GetUsersAdminRequest request) {
+        return userRepository.findAllByIdIn(request.getIds(), request.getPageable()).stream()
+                .map(userMapper::toDto)
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public UserDto saveNewUser(NewUserRequest request) {
+        User user = userMapper.toNewUser(request);
+        userRepository.save(user);
+        return userMapper.toDto(user);
+    }
+
+    @Override
+    @Transactional
+    public void deleteUser(Long userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new NotFoundException(User.class, userId);
+        }
+
+        userRepository.deleteById(userId);
+    }
+
     private User fetchUser(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException(User.class, userId));
+        return userRepository.safeFetch(userId);
     }
 }

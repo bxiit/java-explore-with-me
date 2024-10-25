@@ -3,6 +3,7 @@ package ru.practicum.explorewithme.service.controller.advice;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -17,6 +18,8 @@ import java.util.List;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final List<String> EMPTY_ERRORS = Collections.emptyList();
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(ConstraintViolationException.class)
@@ -47,15 +50,24 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(NotFoundException.class)
     public ApiError handleNotFound(NotFoundException e) {
-        return new ApiError(Collections.emptyList(),
+        return new ApiError(EMPTY_ERRORS,
                 e.getMessage(), e.getReason(), e.getStatus(), Instant.now());
     }
 
     @ExceptionHandler(NumberFormatException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiError handleNumberFormat(NumberFormatException e) {
-        return new ApiError(Collections.emptyList(),
+        return new ApiError(EMPTY_ERRORS,
                 "Incorrectly made request.", e.getMessage(), HttpStatus.BAD_REQUEST.name(), Instant.now()
+        );
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ApiError handleConstraint(DataIntegrityViolationException e) {
+        return new ApiError(EMPTY_ERRORS,
+                "Integrity constraint has been violated.", e.getMessage(), HttpStatus.BAD_REQUEST.name(),
+                Instant.now()
         );
     }
 }
