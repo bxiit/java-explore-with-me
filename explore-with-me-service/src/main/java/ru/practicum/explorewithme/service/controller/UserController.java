@@ -2,6 +2,7 @@ package ru.practicum.explorewithme.service.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.explorewithme.service.dto.event.EventFullDto;
 import ru.practicum.explorewithme.service.dto.event.EventRequestStatusUpdateRequest;
@@ -37,6 +39,7 @@ public class UserController {
     }
 
     @PostMapping("/{userId}/events")
+    @ResponseStatus(HttpStatus.CREATED)
     public EventFullDto save(@PathVariable("userId") Long userId, @RequestBody @Valid NewEventDto request) {
         return userService.save(userId, request);
     }
@@ -83,6 +86,7 @@ public class UserController {
         return userService.getUserRequests(userId);
     }
 
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/{userId}/requests")
     public ParticipationRequestDto saveParticipationRequest(
             @PathVariable("userId") Long userId,

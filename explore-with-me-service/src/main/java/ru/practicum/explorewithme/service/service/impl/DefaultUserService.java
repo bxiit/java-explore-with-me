@@ -2,10 +2,10 @@ package ru.practicum.explorewithme.service.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.util.CollectionUtils;
 import ru.practicum.explorewithme.service.dto.event.EventFullDto;
 import ru.practicum.explorewithme.service.dto.event.EventRequestStatusUpdateRequest;
 import ru.practicum.explorewithme.service.dto.event.EventRequestStatusUpdateResult;
@@ -22,7 +22,9 @@ import ru.practicum.explorewithme.service.mapper.UserMapper;
 import ru.practicum.explorewithme.service.repository.UserRepository;
 import ru.practicum.explorewithme.service.service.EventService;
 import ru.practicum.explorewithme.service.service.UserService;
+import ru.practicum.explorewithme.service.specs.UserSpecifications;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -34,7 +36,6 @@ public class DefaultUserService implements UserService {
     private final UserMapper userMapper;
 
     @Override
-    @ResponseStatus(HttpStatus.CREATED)
     public EventFullDto save(Long userId, NewEventDto request) {
         User user = fetchUser(userId);
         return eventService.save(user, request);
@@ -65,7 +66,6 @@ public class DefaultUserService implements UserService {
     }
 
     @Override
-    @ResponseStatus(HttpStatus.CREATED)
     public ParticipationRequestDto saveParticipationRequest(Long userId, Long eventId) {
         User user = fetchUser(userId);
         return eventService.saveParticipationRequest(user, eventId);
@@ -91,7 +91,11 @@ public class DefaultUserService implements UserService {
 
     @Override
     public List<UserDto> get(GetUsersAdminRequest request) {
-        return userRepository.findAllByIdIn(request.getIds(), request.getPageable()).stream()
+        ArrayList<Specification<User>> specifications = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(request.getIds())) {
+            specifications.add(UserSpecifications.users(request.getIds()));
+        }
+        return userRepository.findAll(Specification.allOf(specifications), request.getPageable()).stream()
                 .map(userMapper::toDto)
                 .toList();
     }

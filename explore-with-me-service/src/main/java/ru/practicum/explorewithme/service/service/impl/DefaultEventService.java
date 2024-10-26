@@ -74,8 +74,12 @@ public class DefaultEventService implements EventService {
 
         ParticipationStatus participantStatus = event.getRequestModeration()
                 ? ParticipationStatus.PENDING
-                : ParticipationStatus.APPROVED;
+                : ParticipationStatus.CONFIRMED;
+        if (event.getParticipantLimit().equals(0)) {
+            participantStatus = ParticipationStatus.CONFIRMED;
+        }
         ParticipationRequest participationRequest = new ParticipationRequest(event, user, Instant.now(), participantStatus);
+
         requestRepository.save(participationRequest);
 
         return requestMapper.toDto(participationRequest);
@@ -221,7 +225,9 @@ public class DefaultEventService implements EventService {
                     FORBIDDEN, "Only pending or canceled events can be changed");
         }
 
-        updateRequest.getStateAction().updateEventState(event);
+        if (updateRequest.getStateAction() != null) {
+            updateRequest.getStateAction().updateEventState(event);
+        }
 
         Optional.ofNullable(updateRequest.getCategory())
                 .ifPresent(categoryId -> event.setCategory(fetchCategory(categoryId)));
@@ -250,6 +256,9 @@ public class DefaultEventService implements EventService {
     }
 
     private boolean isLimitReached(Event event) {
+        if (event.getParticipantLimit().equals(0)) {
+            return false;
+        }
         return !(event.getParticipantLimit() > event.getConfirmedRequests());
     }
 
@@ -274,7 +283,7 @@ public class DefaultEventService implements EventService {
             Specification<Event> specification = EventSpecifications.onlyAvailable();
             specifications.add(specification);
         }
-        if (CollectionUtils.isEmpty(request.getCategories())) {
+        if (!CollectionUtils.isEmpty(request.getCategories())) {
             Specification<Event> specification = EventSpecifications.categories(request.getCategories());
             specifications.add(specification);
         }
@@ -283,11 +292,11 @@ public class DefaultEventService implements EventService {
 
     private List<Specification<Event>> getAdminRequestSpecification(GetEventsAdminRequest request) {
         ArrayList<Specification<Event>> specifications = new ArrayList<>();
-        if (CollectionUtils.isEmpty(request.getCategories())) {
+        if (!CollectionUtils.isEmpty(request.getCategories())) {
             Specification<Event> specification = EventSpecifications.categories(request.getCategories());
             specifications.add(specification);
         }
-        if (CollectionUtils.isEmpty(request.getUsers())) {
+        if (!CollectionUtils.isEmpty(request.getUsers())) {
             Specification<Event> specification = EventSpecifications.users(request.getUsers());
             specifications.add(specification);
         }

@@ -14,3 +14,6 @@ spring:
   liquibase:
     default-schema: ewm
     enabled: false
+logging:
+  level:
+    org.zalando.logbook: trace

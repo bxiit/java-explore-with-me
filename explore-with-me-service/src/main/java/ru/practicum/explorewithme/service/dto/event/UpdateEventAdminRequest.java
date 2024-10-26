@@ -35,6 +35,7 @@ public class UpdateEventAdminRequest {
 
     private UpdateEventAdminAction stateAction;
 
+    @NotOnlySpace
     @Size(max = 120, min = 3)
     private String title;
 }

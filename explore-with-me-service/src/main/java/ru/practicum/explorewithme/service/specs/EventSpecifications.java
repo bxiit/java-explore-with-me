@@ -1,6 +1,8 @@
 package ru.practicum.explorewithme.service.specs;
 
+import jakarta.persistence.criteria.Join;
 import org.springframework.data.jpa.domain.Specification;
+import ru.practicum.explorewithme.service.entity.Category;
 import ru.practicum.explorewithme.service.entity.Event;
 
 import java.time.Instant;
@@ -32,10 +34,16 @@ public class EventSpecifications {
     }
 
     public static Specification<Event> categories(Collection<Long> categories) {
-        return (root, query, builder) -> root.join("category").in(categories);
+        return (root, query, builder) -> {
+            Join<Category, Event> categoryJoin = root.join("category");
+            return categoryJoin.get("id").in(categories);
+        };
     }
 
     public static Specification<Event> users(Collection<Long> users) {
-        return (root, query, builder) -> root.join("initiator").in(users);
+        return (root, query, builder) -> {
+            Join<Object, Object> userJoin = root.join("initiator");
+            return userJoin.get("id").in(users);
+        };
     }
 }
