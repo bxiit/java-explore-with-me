@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   stats-server:
     container_name: ewm_statistics
@@ -35,7 +33,7 @@ services:
     environment:
       'spring.datasource.username': postgres
       'spring.datasource.password': postgres
-      'spring.datasource.url': jdbc:postgresql://ewm-db:5432/ewm
+      'spring.datasource.url': jdbc:postgresql://ewm-db:5432/ewm_service
 
   ewm-db:
     container_name: ewm_service_db
