@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.explorewithme.service.dto.ApiError;
+import ru.practicum.explorewithme.service.exception.BadRequestException;
+import ru.practicum.explorewithme.service.exception.ConflictException;
 import ru.practicum.explorewithme.service.exception.NotFoundException;
 
 import java.time.Instant;
@@ -62,11 +64,29 @@ public class GlobalExceptionHandler {
         );
     }
 
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ApiError handleConstraint(DataIntegrityViolationException e) {
         return new ApiError(EMPTY_ERRORS,
-                "Integrity constraint has been violated.", e.getMessage(), HttpStatus.BAD_REQUEST.name(),
+                "Integrity constraint has been violated.", e.getMessage(), HttpStatus.CONFLICT.name(),
+                Instant.now()
+        );
+    }
+
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(ConflictException.class)
+    public ApiError handleConflict(ConflictException e) {
+        return new ApiError(EMPTY_ERRORS,
+                "Integrity constraint has been violated.", e.getMessage(), HttpStatus.CONFLICT.name(),
+                Instant.now()
+        );
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(BadRequestException.class)
+    public ApiError handleConflict(BadRequestException e) {
+        return new ApiError(EMPTY_ERRORS,
+                "Incorrectly made request.", e.getMessage(), HttpStatus.BAD_REQUEST.name(),
                 Instant.now()
         );
     }

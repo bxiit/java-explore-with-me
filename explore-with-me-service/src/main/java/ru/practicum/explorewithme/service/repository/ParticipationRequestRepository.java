@@ -3,6 +3,7 @@ package ru.practicum.explorewithme.service.repository;
 import ru.practicum.explorewithme.service.entity.ParticipationRequest;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ParticipationRequestRepository extends EwmRepository<ParticipationRequest> {
     Integer countAllByEventId(Long eventId);
@@ -11,7 +12,9 @@ public interface ParticipationRequestRepository extends EwmRepository<Participat
 
     List<ParticipationRequest> findAllByRequesterId(Long requesterId);
 
-    List<ParticipationRequest> findAllByRequesterIdAndEventId(Long id, Long eventId);
+    Optional<ParticipationRequest> findByIdAndRequesterId(Long id, Long requesterId);
+
+    List<ParticipationRequest> findAllByEventId(Long eventId);
 
     @Override
     default Class<ParticipationRequest> entityClass() {

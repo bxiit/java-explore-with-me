@@ -1,12 +1,13 @@
 package ru.practicum.explorewithme.service.dto.event;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import ru.practicum.explorewithme.service.dto.Location;
+import ru.practicum.explorewithme.service.util.InstantStringDeserializer;
 import ru.practicum.explorewithme.service.validation.NotOnlySpace;
 
 import java.time.Instant;
@@ -26,7 +27,7 @@ public class NewEventDto {
     @Size(min = 20, max = 7000)
     private String description;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
+    @JsonDeserialize(using = InstantStringDeserializer.class)
     private Instant eventDate;
 
     @NotNull

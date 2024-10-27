@@ -6,25 +6,35 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldNameConstants;
 import ru.practicum.explorewithme.service.dto.Location;
 import ru.practicum.explorewithme.service.enums.EventState;
 
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @Entity
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
+@FieldNameConstants
+@EqualsAndHashCode(of = "id", callSuper = false)
 public class Event extends BaseEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(length = 2000)
     private String annotation;
@@ -39,7 +49,7 @@ public class Event extends BaseEntity {
 
     private Instant eventDate;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     private User initiator;
 
     @Embedded
@@ -47,8 +57,8 @@ public class Event extends BaseEntity {
 
     private Boolean paid;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Compilation compilation;
+    @ManyToMany(mappedBy = "events")
+    private Set<Compilation> compilations = new HashSet<>();
 
     private Integer participantLimit;
 

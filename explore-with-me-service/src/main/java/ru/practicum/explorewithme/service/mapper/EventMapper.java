@@ -21,8 +21,9 @@ import ru.practicum.explorewithme.service.entity.User;
 public interface EventMapper {
     EventShortDto toShortDto(Event event);
 
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "views", ignore = true)
-    @Mapping(target = "compilation", ignore = true)
+    @Mapping(target = "compilations", ignore = true)
     @Mapping(target = "publishedOn", ignore = true)
     @Mapping(target = "initiator", source = "user")
     @Mapping(target = "category", source = "category")

@@ -17,3 +17,6 @@ spring:
 logging:
   level:
     org.zalando.logbook: trace
+statistics:
+  server:
+    url: http://localhost:9090

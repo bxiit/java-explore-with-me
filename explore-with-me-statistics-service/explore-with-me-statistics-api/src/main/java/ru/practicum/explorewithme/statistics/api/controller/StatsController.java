@@ -12,6 +12,7 @@ import ru.practicum.explorewithme.statistics.api.service.StatisticsService;
 import ru.practicum.explorewithme.statistics.contract.dto.EndpointHit;
 import ru.practicum.explorewithme.statistics.contract.dto.ViewStats;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -26,9 +27,9 @@ public class StatsController {
     }
 
     @GetMapping("/stats")
-    public List<ViewStats> getStats(
-            GetViewStatsRequest request
-    ) {
-        return statisticsService.get(request);
+    public List<ViewStats> getStats(LocalDateTime start, LocalDateTime end, String[] uris, boolean unique) {
+        return statisticsService.get(new GetViewStatsRequest(
+                start, end, uris, unique
+        ));
     }
 }

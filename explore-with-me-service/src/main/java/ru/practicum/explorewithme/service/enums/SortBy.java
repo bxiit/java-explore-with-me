@@ -6,7 +6,7 @@ public enum SortBy implements SortParameter {
     EVENT_DATE {
         @Override
         public Sort getSort() {
-            return Sort.by("event_date");
+            return Sort.by("eventDate");
         }
     },
     VIEWS {

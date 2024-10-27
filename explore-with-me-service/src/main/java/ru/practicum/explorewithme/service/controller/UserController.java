@@ -73,7 +73,7 @@ public class UserController {
     public EventRequestStatusUpdateResult updateEvent(
             @PathVariable("eventId") Long eventId,
             @PathVariable("userId") Long userId,
-            @RequestBody @Valid EventRequestStatusUpdateRequest request
+            @RequestBody(required = false) @Valid EventRequestStatusUpdateRequest request
     ) {
         return userService.updateEventParticipationStatus(userId, eventId, request);
     }

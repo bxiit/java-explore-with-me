@@ -2,6 +2,7 @@ package ru.practicum.explorewithme.service.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.explorewithme.service.dto.category.CategoryDto;
@@ -53,7 +54,7 @@ public class DefaultCategoryService implements CategoryService {
 
     @Override
     public List<CategoryDto> get(int from, int size) {
-        return categoryRepository.findAll().stream()
+        return categoryRepository.findAll(PageRequest.of(from, size)).stream()
                 .map(categoryMapper::toDto)
                 .toList();
     }

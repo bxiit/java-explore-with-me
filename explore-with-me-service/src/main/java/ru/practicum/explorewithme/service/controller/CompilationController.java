@@ -19,7 +19,7 @@ public class CompilationController {
 
     @GetMapping
     public List<CompilationDto> get(
-            @RequestParam Boolean pinned,
+            @RequestParam(required = false) Boolean pinned,
             @RequestParam(value = "from", defaultValue = "0") Integer from,
             @RequestParam(value = "size", defaultValue = "10") Integer size
     ) {

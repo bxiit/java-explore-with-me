@@ -3,8 +3,10 @@ package ru.practicum.explorewithme.service.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import ru.practicum.explorewithme.service.dto.compilation.CompilationDto;
 import ru.practicum.explorewithme.service.dto.compilation.NewCompilationDto;
 import ru.practicum.explorewithme.service.dto.compilation.UpdateCompilationRequest;
@@ -27,7 +29,11 @@ public class DefaultCompilationService implements CompilationService {
 
     @Override
     public List<CompilationDto> get(Boolean pinned, int from, int size) {
-        return compilationRepository.findAllByPinned(pinned, PageRequest.of(from, size)).stream()
+        Specification<Compilation> specification = null;
+        if (pinned != null) {
+            specification = (root, query, builder) -> builder.equal(root.get("pinned"), pinned);
+        }
+        return compilationRepository.findAll(specification, PageRequest.of(from, size)).stream()
                 .map(mapper::toDto)
                 .toList();
     }
@@ -43,7 +49,7 @@ public class DefaultCompilationService implements CompilationService {
     public CompilationDto saveNewCompilation(NewCompilationDto request) {
         Compilation compilation = mapper.toNewCompilation(request);
         List<Event> compilationEvents = eventRepository.findAllById(request.getEvents());
-        compilationEvents.forEach(event -> event.setCompilation(compilation));
+        compilationEvents.forEach(compilation::addEvent);
         compilationRepository.save(compilation);
         return mapper.toDto(compilation);
     }
@@ -59,6 +65,10 @@ public class DefaultCompilationService implements CompilationService {
     @Transactional
     public CompilationDto updateCompilation(Long compId, UpdateCompilationRequest request) {
         Compilation compilation = compilationRepository.safeFetch(compId);
+        if (!CollectionUtils.isEmpty(request.getEvents())) {
+            List<Event> events = eventRepository.findAllById(request.getEvents());
+            compilation.addEvents(events);
+        }
         compilation = mapper.updateFields(compilation, request);
         return mapper.toDto(compilation);
     }

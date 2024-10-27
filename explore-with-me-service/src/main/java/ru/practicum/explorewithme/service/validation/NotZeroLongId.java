@@ -2,6 +2,7 @@ package ru.practicum.explorewithme.service.validation;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
+import ru.practicum.explorewithme.service.validation.validator.NotZeroIdValidator;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
