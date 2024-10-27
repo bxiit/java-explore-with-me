@@ -6,5 +6,5 @@ public interface CategoryRepository extends EwmRepository<Category> {
     @Override
     default Class<Category> entityClass() {
         return Category.class;
-    };
+    }
 }
