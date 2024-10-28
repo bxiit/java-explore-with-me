@@ -2,7 +2,7 @@ package ru.practicum.explorewithme.service.dto.event;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Data;
-import ru.practicum.explorewithme.service.dto.Location;
+import ru.practicum.explorewithme.service.entity.Location;
 import ru.practicum.explorewithme.service.dto.category.CategoryDto;
 import ru.practicum.explorewithme.service.dto.user.UserShortDto;
 import ru.practicum.explorewithme.service.enums.EventState;

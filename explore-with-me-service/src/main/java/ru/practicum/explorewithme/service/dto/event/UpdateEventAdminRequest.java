@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
-import ru.practicum.explorewithme.service.dto.Location;
+import ru.practicum.explorewithme.service.entity.Location;
 import ru.practicum.explorewithme.service.enums.UpdateEventAdminAction;
 import ru.practicum.explorewithme.service.util.InstantStringDeserializer;
 import ru.practicum.explorewithme.service.validation.NotOnlySpace;

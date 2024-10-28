@@ -17,7 +17,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldNameConstants;
-import ru.practicum.explorewithme.service.dto.Location;
+import org.hibernate.annotations.JdbcType;
+import org.hibernate.dialect.PostgreSQLEnumJdbcType;
 import ru.practicum.explorewithme.service.enums.EventState;
 
 import java.time.Instant;
@@ -67,6 +68,7 @@ public class Event extends BaseEntity {
     private Boolean requestModeration; // Нужна ли пре-модерация заявок на участие
 
     @Enumerated(EnumType.STRING)
+    @JdbcType(value = PostgreSQLEnumJdbcType.class)
     private EventState state;
 
     @Column(length = 120)

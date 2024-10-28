@@ -33,7 +33,7 @@ services:
     environment:
       'spring.datasource.username': postgres
       'spring.datasource.password': postgres
-      'spring.datasource.url': jdbc:postgresql://ewm-db:5432/ewm_service
+      'spring.datasource.url': jdbc:postgresql://ewm-db:5432/ewm
 
   ewm-db:
     container_name: ewm_service_db
@@ -41,6 +41,6 @@ services:
     ports:
       - "5555:5432"
     environment:
+      POSTGRES_DB: ewm
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: ewm

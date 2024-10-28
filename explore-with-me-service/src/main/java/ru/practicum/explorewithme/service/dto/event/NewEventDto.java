@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
-import ru.practicum.explorewithme.service.dto.Location;
+import ru.practicum.explorewithme.service.entity.Location;
 import ru.practicum.explorewithme.service.util.InstantStringDeserializer;
 import ru.practicum.explorewithme.service.validation.NotOnlySpace;
 

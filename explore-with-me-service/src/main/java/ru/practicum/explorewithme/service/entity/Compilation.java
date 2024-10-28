@@ -44,9 +44,4 @@ public class Compilation extends BaseEntity {
         this.getEvents().add(event);
         event.getCompilations().add(this);
     }
-
-    public void removeEvent(Event event) {
-        this.getEvents().remove(event);
-        event.getCompilations().remove(this);
-    }
 }

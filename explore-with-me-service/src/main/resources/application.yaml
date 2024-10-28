@@ -4,16 +4,15 @@ spring:
   jpa:
     show-sql: true
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: validate
     database-platform: org.hibernate.dialect.PostgreSQLDialect
   datasource:
     username: ${DB_USER:postgres}
     password: ${DB_PASSWORD:postgres}
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5555}/${DB_NAME:ewm_service}
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5555}/${DB_NAME:ewm}
     driver-class-name: org.postgresql.Driver
   liquibase:
-    default-schema: ewm
-    enabled: false
+    default-schema: ewm_service
 logging:
   level:
     org.zalando.logbook: trace

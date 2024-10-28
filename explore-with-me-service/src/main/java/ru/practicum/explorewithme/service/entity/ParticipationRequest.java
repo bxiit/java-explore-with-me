@@ -1,6 +1,8 @@
 package ru.practicum.explorewithme.service.entity;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -11,6 +13,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcType;
+import org.hibernate.dialect.PostgreSQLEnumJdbcType;
 import ru.practicum.explorewithme.service.enums.ParticipationStatus;
 
 @Data
@@ -30,5 +34,7 @@ public class ParticipationRequest extends BaseEntity {
     @OneToOne(fetch = FetchType.LAZY)
     private User requester;
 
+    @Enumerated(EnumType.STRING)
+    @JdbcType(value = PostgreSQLEnumJdbcType.class)
     private ParticipationStatus status;
 }
