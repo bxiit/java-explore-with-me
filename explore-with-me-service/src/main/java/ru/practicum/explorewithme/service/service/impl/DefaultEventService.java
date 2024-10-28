@@ -256,9 +256,11 @@ public class DefaultEventService implements EventService {
 
     private Long getViews(Instant start, Instant end, String uri) {
         String[] uris = new String[]{uri};
+        log.info("Getting view from statistics service for uri: {}", uri);
         List<ViewStats> stats = statisticsClient.getStats(
                 toLocalDateTime(start), toLocalDateTime(end), uris, true
         );
+        log.info("Response from statistics service {}", stats);
         if (stats != null && !stats.isEmpty()) {
             return stats.getFirst().getHits();
         } else {
