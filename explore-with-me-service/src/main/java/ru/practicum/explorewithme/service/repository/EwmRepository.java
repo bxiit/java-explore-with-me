@@ -12,11 +12,5 @@ public interface EwmRepository<T> extends JpaRepository<T, Long> {
                 .orElseThrow(() -> new NotFoundException(entityClass(), id));
     }
 
-    default void existenceCheck(Long id) {
-        if (!existsById(id)) {
-            throw new NotFoundException(entityClass(), id);
-        }
-    }
-
     Class<T> entityClass();
 }

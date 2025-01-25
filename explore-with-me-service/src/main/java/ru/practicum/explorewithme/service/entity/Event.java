@@ -75,4 +75,16 @@ public class Event extends BaseEntity {
     private String title;
 
     private Long views;
+
+    public void confirmRequest() {
+        setConfirmedRequests(getConfirmedRequests() + 1);
+    }
+
+    public boolean isLimitless() {
+        return participantLimit.equals(0);
+    }
+
+    public boolean isPublished() {
+        return EventState.PUBLISHED.equals(state);
+    }
 }

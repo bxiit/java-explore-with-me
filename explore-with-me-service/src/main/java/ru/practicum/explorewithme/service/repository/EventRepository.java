@@ -28,6 +28,8 @@ public interface EventRepository extends EwmRepository<Event>, JpaSpecificationE
 
     Optional<Event> findByInitiatorIdAndId(Long initiatorId, Long id);
 
+    boolean existsByInitiatorIdAndId(Long initiatorId, Long id);
+
     @Override
     default Class<Event> entityClass() {
         return Event.class;

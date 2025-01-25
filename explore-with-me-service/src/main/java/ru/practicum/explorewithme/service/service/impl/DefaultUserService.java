@@ -36,25 +36,25 @@ public class DefaultUserService implements UserService {
     private final UserMapper userMapper;
 
     @Override
-    public EventFullDto save(Long userId, NewEventDto request) {
+    public EventFullDto saveNewEvent(Long userId, NewEventDto request) {
         User user = fetchUser(userId);
         return eventService.save(user, request);
     }
 
     @Override
-    public List<EventShortDto> get(Long userId, int from, int size) {
+    public List<EventShortDto> getUserEvents(Long userId, int from, int size) {
         User user = fetchUser(userId);
         return eventService.getUsersEvents(user, from, size);
     }
 
     @Override
-    public EventFullDto get(Long userId, Long eventId) {
+    public EventFullDto getEvent(Long userId, Long eventId) {
         User user = fetchUser(userId);
         return eventService.getEvent(user, eventId);
     }
 
     @Override
-    public EventFullDto edit(Long userId, Long eventId, UpdateEventUserRequest request) {
+    public EventFullDto editEvent(Long userId, Long eventId, UpdateEventUserRequest request) {
         User user = fetchUser(userId);
         return eventService.edit(user, eventId, request);
     }
@@ -91,7 +91,7 @@ public class DefaultUserService implements UserService {
 
     @Override
     public List<UserDto> get(GetUsersAdminRequest request) {
-        ArrayList<Specification<User>> specifications = new ArrayList<>();
+        List<Specification<User>> specifications = new ArrayList<>();
         if (!CollectionUtils.isEmpty(request.getIds())) {
             specifications.add(UserSpecifications.users(request.getIds()));
         }
@@ -102,7 +102,7 @@ public class DefaultUserService implements UserService {
 
     @Override
     @Transactional
-    public UserDto saveNewUser(NewUserRequest request) {
+    public UserDto save(NewUserRequest request) {
         User user = userMapper.toNewUser(request);
         userRepository.save(user);
         return userMapper.toDto(user);
@@ -111,11 +111,10 @@ public class DefaultUserService implements UserService {
     @Override
     @Transactional
     public void deleteUser(Long userId) {
-        if (!userRepository.existsById(userId)) {
+        int deleted = userRepository.deleteUserById(userId);
+        if (deleted == 0) {
             throw new NotFoundException(User.class, userId);
         }
-
-        userRepository.deleteById(userId);
     }
 
     private User fetchUser(Long userId) {

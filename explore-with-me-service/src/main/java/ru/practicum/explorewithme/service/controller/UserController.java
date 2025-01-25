@@ -35,13 +35,13 @@ public class UserController {
             @RequestParam(value = "from", defaultValue = "0") Integer from,
             @RequestParam(value = "size", defaultValue = "10") Integer size
     ) {
-        return userService.get(userId, from, size);
+        return userService.getUserEvents(userId, from, size);
     }
 
     @PostMapping("/{userId}/events")
     @ResponseStatus(HttpStatus.CREATED)
     public EventFullDto save(@PathVariable("userId") Long userId, @RequestBody @Valid NewEventDto request) {
-        return userService.save(userId, request);
+        return userService.saveNewEvent(userId, request);
     }
 
     @GetMapping("/{userId}/events/{eventId}")
@@ -49,7 +49,7 @@ public class UserController {
             @PathVariable Long eventId,
             @PathVariable Long userId
     ) {
-        return userService.get(userId, eventId);
+        return userService.getEvent(userId, eventId);
     }
 
     @PatchMapping("/{userId}/events/{eventId}")
@@ -57,7 +57,7 @@ public class UserController {
             @PathVariable("userId") Long userId,
             @PathVariable("eventId") Long eventId,
             @RequestBody @Valid UpdateEventUserRequest request) {
-        return userService.edit(userId, eventId, request);
+        return userService.editEvent(userId, eventId, request);
     }
 
     @GetMapping("/{userId}/events/{eventId}/requests")

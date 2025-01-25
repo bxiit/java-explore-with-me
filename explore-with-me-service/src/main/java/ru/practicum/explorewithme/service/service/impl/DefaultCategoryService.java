@@ -39,8 +39,10 @@ public class DefaultCategoryService implements CategoryService {
     @Transactional
     public void delete(Long catId) {
         checkForEmptyCategory(catId);
-        checkForExistence(catId);
-        categoryRepository.deleteById(catId);
+        int deleted = categoryRepository.deleteCategoryById(catId);
+        if (deleted == 0) {
+            throw new NotFoundException(Category.class, catId);
+        }
     }
 
     // for admin
@@ -72,12 +74,6 @@ public class DefaultCategoryService implements CategoryService {
     private void checkForEmptyCategory(Long catId) {
         if (eventRepository.existsByCategoryId(catId)) {
             throw new ConflictException("The category is not empty");
-        }
-    }
-
-    private void checkForExistence(Long catId) {
-        if (!categoryRepository.existsById(catId)) {
-            throw new NotFoundException(Category.class, catId);
         }
     }
 }

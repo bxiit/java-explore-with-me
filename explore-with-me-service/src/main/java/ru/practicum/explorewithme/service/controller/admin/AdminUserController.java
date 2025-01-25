@@ -34,7 +34,7 @@ public class AdminUserController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public UserDto save(@RequestBody @Valid NewUserRequest request) {
-        return userService.saveNewUser(request);
+        return userService.save(request);
     }
 
     @DeleteMapping("/{userId}")

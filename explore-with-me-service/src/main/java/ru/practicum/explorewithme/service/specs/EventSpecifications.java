@@ -2,11 +2,16 @@ package ru.practicum.explorewithme.service.specs;
 
 import jakarta.persistence.criteria.Join;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.util.CollectionUtils;
+import ru.practicum.explorewithme.service.dto.event.GetEventsAdminRequest;
+import ru.practicum.explorewithme.service.dto.event.GetEventsUserRequest;
 import ru.practicum.explorewithme.service.entity.Category;
 import ru.practicum.explorewithme.service.entity.Event;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 public class EventSpecifications {
     public static Specification<Event> text(String text) {
@@ -45,5 +50,53 @@ public class EventSpecifications {
             Join<Object, Object> userJoin = root.join(Event.Fields.initiator);
             return userJoin.get("id").in(users);
         };
+    }
+
+    public static List<Specification<Event>> getAdminRequestSpecification(GetEventsAdminRequest request) {
+        ArrayList<Specification<Event>> specifications = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(request.getCategories())) {
+            Specification<Event> specification = EventSpecifications.categories(request.getCategories());
+            specifications.add(specification);
+        }
+        if (!CollectionUtils.isEmpty(request.getUsers())) {
+            Specification<Event> specification = EventSpecifications.users(request.getUsers());
+            specifications.add(specification);
+        }
+        if (request.getStart() != null && request.getEnd() != null) {
+            Specification<Event> specification = EventSpecifications.startAndEnd(request.getStart(), request.getEnd());
+            specifications.add(specification);
+        } else {
+            Specification<Event> specification = EventSpecifications.defaultStartAndEnd();
+            specifications.add(specification);
+        }
+        return specifications;
+    }
+
+    public static List<Specification<Event>> getUserRequestSpecification(GetEventsUserRequest request) {
+        ArrayList<Specification<Event>> specifications = new ArrayList<>();
+        if (request.getText() != null) {
+            Specification<Event> specification = EventSpecifications.text(request.getText());
+            specifications.add(specification);
+        }
+        if (request.getPaid() != null) {
+            Specification<Event> specification = EventSpecifications.paid(request.getPaid());
+            specifications.add(specification);
+        }
+        if (request.getStart() != null && request.getEnd() != null) {
+            Specification<Event> specification = EventSpecifications.startAndEnd(request.getStart(), request.getEnd());
+            specifications.add(specification);
+        } else {
+            Specification<Event> specification = EventSpecifications.defaultStartAndEnd();
+            specifications.add(specification);
+        }
+        if (request.getOnlyAvailable()) {
+            Specification<Event> specification = EventSpecifications.onlyAvailable();
+            specifications.add(specification);
+        }
+        if (!CollectionUtils.isEmpty(request.getCategories())) {
+            Specification<Event> specification = EventSpecifications.categories(request.getCategories());
+            specifications.add(specification);
+        }
+        return specifications;
     }
 }

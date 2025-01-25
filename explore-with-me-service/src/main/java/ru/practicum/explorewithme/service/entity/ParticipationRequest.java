@@ -37,4 +37,14 @@ public class ParticipationRequest extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @JdbcType(value = PostgreSQLEnumJdbcType.class)
     private ParticipationStatus status;
+
+    public ParticipationStatus confirm() {
+        setStatus(ParticipationStatus.CONFIRMED);
+        return getStatus();
+    }
+
+    public ParticipationStatus reject() {
+        setStatus(ParticipationStatus.REJECTED);
+        return getStatus();
+    }
 }

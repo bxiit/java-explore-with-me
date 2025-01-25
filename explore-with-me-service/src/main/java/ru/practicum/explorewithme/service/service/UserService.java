@@ -14,13 +14,13 @@ import ru.practicum.explorewithme.service.dto.user.UserDto;
 import java.util.List;
 
 public interface UserService {
-    List<EventShortDto> get(Long userId, int from, int size);
+    List<EventShortDto> getUserEvents(Long userId, int from, int size);
 
-    EventFullDto save(Long userId, NewEventDto request);
+    EventFullDto saveNewEvent(Long userId, NewEventDto request);
 
-    EventFullDto get(Long userId, Long eventId);
+    EventFullDto getEvent(Long userId, Long eventId);
 
-    EventFullDto edit(Long userId, Long eventId, UpdateEventUserRequest request);
+    EventFullDto editEvent(Long userId, Long eventId, UpdateEventUserRequest request);
 
     List<ParticipationRequestDto> getRequests(Long userId, Long eventId);
 
@@ -34,7 +34,7 @@ public interface UserService {
 
     List<UserDto> get(GetUsersAdminRequest request);
 
-    UserDto saveNewUser(NewUserRequest request);
+    UserDto save(NewUserRequest request);
 
     void deleteUser(Long userId);
 }

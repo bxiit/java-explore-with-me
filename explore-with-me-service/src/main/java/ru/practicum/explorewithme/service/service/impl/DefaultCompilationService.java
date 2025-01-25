@@ -12,10 +12,12 @@ import ru.practicum.explorewithme.service.dto.compilation.NewCompilationDto;
 import ru.practicum.explorewithme.service.dto.compilation.UpdateCompilationRequest;
 import ru.practicum.explorewithme.service.entity.Compilation;
 import ru.practicum.explorewithme.service.entity.Event;
+import ru.practicum.explorewithme.service.exception.NotFoundException;
 import ru.practicum.explorewithme.service.mapper.CompilationMapper;
 import ru.practicum.explorewithme.service.repository.CompilationRepository;
 import ru.practicum.explorewithme.service.repository.EventRepository;
 import ru.practicum.explorewithme.service.service.CompilationService;
+import ru.practicum.explorewithme.service.specs.CompilationSpecification;
 
 import java.util.List;
 
@@ -31,7 +33,7 @@ public class DefaultCompilationService implements CompilationService {
     public List<CompilationDto> get(Boolean pinned, int from, int size) {
         Specification<Compilation> specification = null;
         if (pinned != null) {
-            specification = (root, query, builder) -> builder.equal(root.get("pinned"), pinned);
+            specification = CompilationSpecification.pinned(pinned);
         }
         return compilationRepository.findAll(specification, PageRequest.of(from, size)).stream()
                 .map(mapper::toDto)
@@ -47,6 +49,7 @@ public class DefaultCompilationService implements CompilationService {
     @Override
     @Transactional
     public CompilationDto saveNewCompilation(NewCompilationDto request) {
+        log.debug("Saving new compilation with events: {} and title: {}", request.getEvents(), request.getTitle());
         Compilation compilation = mapper.toNewCompilation(request);
         List<Event> compilationEvents = eventRepository.findAllById(request.getEvents());
         compilationEvents.forEach(compilation::addEvent);
@@ -57,13 +60,16 @@ public class DefaultCompilationService implements CompilationService {
     @Override
     @Transactional
     public void deleteCompilation(Long compId) {
-        checkForExistence(compId);
-        compilationRepository.deleteById(compId);
+        int deleted = compilationRepository.deleteCompilationById(compId);
+        if (deleted == 0) {
+            throw new NotFoundException(Compilation.class, compId);
+        }
     }
 
     @Override
     @Transactional
     public CompilationDto updateCompilation(Long compId, UpdateCompilationRequest request) {
+        log.debug("Updating compilation with id: {}, request: {}", compId, request);
         Compilation compilation = compilationRepository.safeFetch(compId);
         if (!CollectionUtils.isEmpty(request.getEvents())) {
             List<Event> events = eventRepository.findAllById(request.getEvents());
@@ -71,10 +77,6 @@ public class DefaultCompilationService implements CompilationService {
         }
         compilation = mapper.updateFields(compilation, request);
         return mapper.toDto(compilation);
-    }
-
-    private void checkForExistence(Long compId) {
-        compilationRepository.existenceCheck(compId);
     }
 
     private Compilation fetchCompilation(Long compId) {

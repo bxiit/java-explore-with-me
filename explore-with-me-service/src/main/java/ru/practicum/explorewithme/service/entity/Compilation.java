@@ -11,6 +11,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldNameConstants;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -21,6 +22,7 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldNameConstants
 @EqualsAndHashCode(of = "id", callSuper = false)
 public class Compilation extends BaseEntity {
     @Id

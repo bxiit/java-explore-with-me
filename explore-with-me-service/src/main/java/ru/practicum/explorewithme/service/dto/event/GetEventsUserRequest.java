@@ -1,10 +1,11 @@
 package ru.practicum.explorewithme.service.dto.event;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.Data;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import ru.practicum.explorewithme.service.enums.SortBy;
-import ru.practicum.explorewithme.service.validation.NotZeroLongId;
 
 import java.time.Instant;
 import java.util.List;
@@ -12,8 +13,7 @@ import java.util.List;
 @Data
 public class GetEventsUserRequest {
     private String text;
-    @NotZeroLongId
-    private List<Long> categories;
+    private List<@Positive @NotNull Long> categories;
     private Boolean paid;
     private Instant start;
     private Instant end;

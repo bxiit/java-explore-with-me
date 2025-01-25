@@ -1,12 +1,11 @@
 package ru.practicum.explorewithme.service.dto.event;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import ru.practicum.explorewithme.service.entity.Location;
 import ru.practicum.explorewithme.service.enums.UpdateEventAdminAction;
-import ru.practicum.explorewithme.service.util.InstantStringDeserializer;
+import ru.practicum.explorewithme.service.validation.MinDuration;
 import ru.practicum.explorewithme.service.validation.NotOnlySpace;
 
 import java.time.Instant;
@@ -24,7 +23,7 @@ public class UpdateEventAdminRequest {
     @Size(min = 20, max = 7000)
     private String description;
 
-    @JsonDeserialize(using = InstantStringDeserializer.class)
+    @MinDuration(durationFromNow = "PT2H")
     private Instant eventDate;
 
     private Location location;

@@ -9,13 +9,15 @@ spring:
   datasource:
     username: ${DB_USER:postgres}
     password: ${DB_PASSWORD:postgres}
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5555}/${DB_NAME:ewm}
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5555}/${DB_NAME:ewm}?currentSchema=ewm_service
     driver-class-name: org.postgresql.Driver
   liquibase:
     default-schema: ewm_service
+  jackson:
+    date-format: 'yyyy-MM-dd HH:mm:ss'
 logging:
   level:
     org.zalando.logbook: trace
 statistics:
   server:
-    url: http://stats-server:9090
+    url: http://localhost:9090

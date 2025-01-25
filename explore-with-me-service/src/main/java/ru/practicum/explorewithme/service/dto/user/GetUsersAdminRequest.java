@@ -1,16 +1,16 @@
 package ru.practicum.explorewithme.service.dto.user;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.Data;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import ru.practicum.explorewithme.service.validation.NotZeroLongId;
 
 import java.util.List;
 
 @Data
 public class GetUsersAdminRequest {
-    @NotZeroLongId
-    private List<Long> ids;
+    private List<@Positive @NotNull Long> ids;
     private Integer from = 0;
     private Integer size = 10;
 

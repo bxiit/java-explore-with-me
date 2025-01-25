@@ -6,7 +6,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 import ru.practicum.explorewithme.service.dto.event.EventFullDto;
 import ru.practicum.explorewithme.service.dto.event.EventRequestStatusUpdateRequest;
 import ru.practicum.explorewithme.service.dto.event.EventRequestStatusUpdateResult;
@@ -21,11 +20,9 @@ import ru.practicum.explorewithme.service.entity.Category;
 import ru.practicum.explorewithme.service.entity.Event;
 import ru.practicum.explorewithme.service.entity.ParticipationRequest;
 import ru.practicum.explorewithme.service.entity.User;
-import ru.practicum.explorewithme.service.enums.EventRequestStatus;
 import ru.practicum.explorewithme.service.enums.EventState;
 import ru.practicum.explorewithme.service.enums.ParticipationStatus;
 import ru.practicum.explorewithme.service.enums.UpdateEventAdminAction;
-import ru.practicum.explorewithme.service.exception.BadRequestException;
 import ru.practicum.explorewithme.service.exception.ConflictException;
 import ru.practicum.explorewithme.service.exception.NotFoundException;
 import ru.practicum.explorewithme.service.mapper.EventMapper;
@@ -34,21 +31,24 @@ import ru.practicum.explorewithme.service.repository.CategoryRepository;
 import ru.practicum.explorewithme.service.repository.EventRepository;
 import ru.practicum.explorewithme.service.repository.ParticipationRequestRepository;
 import ru.practicum.explorewithme.service.service.EventService;
-import ru.practicum.explorewithme.service.specs.EventSpecifications;
 import ru.practicum.explorewithme.statistics.client.StatisticsClient;
 import ru.practicum.explorewithme.statistics.contract.dto.ViewStats;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static java.util.Collections.emptyList;
+import static ru.practicum.explorewithme.service.specs.EventSpecifications.getAdminRequestSpecification;
+import static ru.practicum.explorewithme.service.specs.EventSpecifications.getUserRequestSpecification;
 
 @Slf4j
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class DefaultEventService implements EventService {
     private final EventRepository eventRepository;
@@ -63,7 +63,6 @@ public class DefaultEventService implements EventService {
     public EventFullDto save(User user, NewEventDto request) {
         Category category = fetchCategory(request.getCategory());
         Event event = eventMapper.toNewEvent(user, category, request);
-        validateEventDate(event.getEventDate());
         event = eventRepository.save(event);
         return eventMapper.toFullDto(event);
     }
@@ -76,14 +75,9 @@ public class DefaultEventService implements EventService {
         }
 
         Event event = fetchEvent(eventId);
-        checkEventParticipationPreconditions(user, event);
+        validateEventParticipationPreconditions(user, event);
 
-        ParticipationStatus participantStatus = event.getRequestModeration()
-                ? ParticipationStatus.PENDING
-                : ParticipationStatus.CONFIRMED;
-        if (event.getParticipantLimit().equals(0)) {
-            participantStatus = ParticipationStatus.CONFIRMED;
-        }
+        ParticipationStatus participantStatus = determineParticipationStatus(event);
         ParticipationRequest participationRequest = requestMapper.toNewRequest(event, user, participantStatus);
 
         requestRepository.save(participationRequest);
@@ -93,7 +87,9 @@ public class DefaultEventService implements EventService {
 
     @Override
     @Transactional
-    public EventRequestStatusUpdateResult updateParticipationStatus(User user, Long eventId, EventRequestStatusUpdateRequest updateRequest) {
+    public EventRequestStatusUpdateResult updateParticipationStatus(
+            User user, Long eventId, EventRequestStatusUpdateRequest updateRequest
+    ) {
         // Время создания запроса на участие в событии после подтверждения
         // должно соответствовать времени создания запроса на участие в событии указанного пользователя до подтверждения
         if (updateRequest == null) {
@@ -102,33 +98,16 @@ public class DefaultEventService implements EventService {
         Event event = fetchEvent(eventId);
         List<ParticipationRequest> participationRequests = requestRepository.findAllById(updateRequest.getRequestIds());
 
-        checkParticipationLimit(event);
+        validateParticipationLimit(event);
 
-        int participantLimit = event.getParticipantLimit();
-        int confirmedRequestsCount = event.getConfirmedRequests();
-
-        ArrayList<ParticipationRequest> confirmedRequests = new ArrayList<>(updateRequest.getRequestIds().size());
-        ArrayList<ParticipationRequest> rejectedRequests = new ArrayList<>(updateRequest.getRequestIds().size());
-
-        for (ParticipationRequest request : participationRequests) {
-            // if limit is reached or update request for rejecting
-            if (confirmedRequestsCount > participantLimit || updateRequest.getStatus().equals(EventRequestStatus.REJECTED)) {
-                request.setStatus(ParticipationStatus.REJECTED);
-                rejectedRequests.add(request);
-            } else {
-                request.setStatus(ParticipationStatus.CONFIRMED);
-                confirmedRequests.add(request);
-                confirmedRequestsCount++;
-            }
-        }
-
-        event.setConfirmedRequests(confirmedRequestsCount);
+        Map<ParticipationStatus, List<ParticipationRequest>> results =
+                processEventParticipationRequests(updateRequest, participationRequests, event);
 
         requestRepository.saveAll(participationRequests);
 
         return new EventRequestStatusUpdateResult(
-                confirmedRequests.stream().map(requestMapper::toDto).toList(),
-                rejectedRequests.stream().map(requestMapper::toDto).toList()
+                results.getOrDefault(ParticipationStatus.CONFIRMED, emptyList()).stream().map(requestMapper::toDto).toList(),
+                results.getOrDefault(ParticipationStatus.REJECTED, emptyList()).stream().map(requestMapper::toDto).toList()
         );
     }
 
@@ -163,8 +142,8 @@ public class DefaultEventService implements EventService {
         Event event = eventRepository.findByIdAndState(id, EventState.PUBLISHED)
                 .orElseThrow(() -> new NotFoundException(Event.class, id));
         Long views = getViews(
-                Instant.now().minus(14, ChronoUnit.DAYS),
-                Instant.now().plus(14, ChronoUnit.DAYS),
+                LocalDateTime.now().minusDays(14),
+                LocalDateTime.now().plusDays(14),
                 "/events/" + id
         );
         event.setViews(views);
@@ -177,12 +156,9 @@ public class DefaultEventService implements EventService {
     public EventFullDto updateEvent(Long eventId, UpdateEventAdminRequest updateRequest) {
         final Event event = eventRepository.safeFetch(eventId);
 
-        Optional.ofNullable(updateRequest.getEventDate())
-                .ifPresent(this::validateEventDate);
-
-        checkStartAndPublishDateDuration(event);
-        checkPublishingAction(updateRequest, event);
-        checkRejectingAction(updateRequest, event);
+        validateStartAndPublishDateDuration(event);
+        validatePublishingAction(updateRequest, event);
+        validateRejectingAction(updateRequest, event);
         if (updateRequest.getStateAction() != null) {
             updateRequest.getStateAction().updateEventState(event);
         }
@@ -217,11 +193,13 @@ public class DefaultEventService implements EventService {
                 .orElseThrow(() -> new NotFoundException(Event.class, eventId));
     }
 
-    @Override // todo
+    @Override
     public List<ParticipationRequestDto> getRequests(User user, Long eventId) {
-        Event event = eventRepository.findByInitiatorIdAndId(user.getId(), eventId)
-                .orElseThrow(() -> new NotFoundException(Event.class, eventId));
-        return requestRepository.findAllByEventId(event.getId()).stream()
+        boolean exists = eventRepository.existsByInitiatorIdAndId(user.getId(), eventId);
+        if (!exists) {
+            throw new NotFoundException(Event.class, eventId);
+        }
+        return requestRepository.findAllByEventId(eventId).stream()
                 .map(requestMapper::toDto)
                 .toList();
     }
@@ -232,18 +210,39 @@ public class DefaultEventService implements EventService {
         final Event event = fetchEvent(eventId);
         validateEventStateForUpdate(event);
 
-        Optional.ofNullable(updateRequest.getEventDate())
-                .ifPresent(this::validateEventDate);
-
-        if (updateRequest.getStateAction() != null) {
-            updateRequest.getStateAction().updateEventState(event);
-        }
+        Optional.ofNullable(updateRequest.getStateAction())
+                .ifPresent(action -> action.updateEventState(event));
 
         Optional.ofNullable(updateRequest.getCategory())
                 .ifPresent(categoryId -> event.setCategory(fetchCategory(categoryId)));
 
         eventMapper.updateFields(event, updateRequest);
         return eventMapper.toFullDto(event);
+    }
+
+    private ParticipationStatus determineParticipationStatus(Event event) {
+        boolean confirm = event.isLimitless() || !event.getRequestModeration();
+        if (confirm) {
+            return ParticipationStatus.CONFIRMED;
+        } else {
+            return ParticipationStatus.PENDING;
+        }
+    }
+
+    private Map<ParticipationStatus, List<ParticipationRequest>> processEventParticipationRequests(
+            EventRequestStatusUpdateRequest updateRequest,
+            List<ParticipationRequest> participationRequests,
+            Event event
+    ) {
+        return participationRequests.stream()
+                .collect(Collectors.groupingBy(request -> {
+                    if (updateRequest.isReject()) {
+                        return request.reject();
+                    } else {
+                        event.confirmRequest();
+                        return request.confirm();
+                    }
+                }));
     }
 
     private Event fetchEvent(Long eventId) {
@@ -254,11 +253,11 @@ public class DefaultEventService implements EventService {
         return categoryRepository.safeFetch(id);
     }
 
-    private Long getViews(Instant start, Instant end, String uri) {
+    private Long getViews(LocalDateTime start, LocalDateTime end, String uri) {
         String[] uris = new String[]{uri};
         log.info("Getting view from statistics service for uri: {}", uri);
         List<ViewStats> stats = statisticsClient.getStats(
-                toLocalDateTime(start), toLocalDateTime(end), uris, true
+                start, end, uris, true
         );
         log.info("Response from statistics service {}", stats);
         if (stats != null && !stats.isEmpty()) {
@@ -268,12 +267,9 @@ public class DefaultEventService implements EventService {
         }
     }
 
-    private LocalDateTime toLocalDateTime(Instant instant) {
-        return LocalDateTime.ofInstant(instant, ZoneOffset.UTC);
-    }
 
-    private void checkEventParticipationPreconditions(User user, Event event) {
-        if (!event.getState().equals(EventState.PUBLISHED)) {
+    private void validateEventParticipationPreconditions(User user, Event event) {
+        if (!event.isPublished()) {
             throw new ConflictException("Cannot request to not published event");
         }
         if (event.getInitiator().getId().equals(user.getId())) {
@@ -284,90 +280,45 @@ public class DefaultEventService implements EventService {
         }
     }
 
-    private void validateEventDate(Instant instant) {
-        Duration twoHours = Duration.ofHours(2);
-        if (!instant.isAfter(Instant.now().plus(twoHours))) {
-            throw new BadRequestException("Invalid event date");
-        }
-    }
+    private void validateParticipationLimit(Event event) {
+        Integer eventRequestsCount = requestRepository.countAllByEventIdAndStatusIn(
+                event.getId(), List.of(ParticipationStatus.CONFIRMED)
+        );
 
-    private void checkParticipationLimit(Event event) {
-        Integer eventRequestsCount = requestRepository.countAllByEventId(event.getId());
-        if (eventRequestsCount.equals(event.getConfirmedRequests())) {
+        if (eventRequestsCount.equals(event.getParticipantLimit())) {
             throw new ConflictException("The participant limit has been reached");
         }
     }
 
     private boolean isLimitReached(Event event) {
-        if (event.getParticipantLimit().equals(0)) {
+        if (event.isLimitless()) {
             return false;
         }
-        return !(event.getParticipantLimit() > event.getConfirmedRequests());
+
+        Integer count = requestRepository.countAllByEventIdAndStatusIn(event.getId(),
+                List.of(
+                        ParticipationStatus.CONFIRMED
+                ));
+
+        return count.equals(event.getParticipantLimit());
     }
 
-    private List<Specification<Event>> getUserRequestSpecification(GetEventsUserRequest request) {
-        ArrayList<Specification<Event>> specifications = new ArrayList<>();
-        if (request.getText() != null) {
-            Specification<Event> specification = EventSpecifications.text(request.getText());
-            specifications.add(specification);
-        }
-        if (request.getPaid() != null) {
-            Specification<Event> specification = EventSpecifications.paid(request.getPaid());
-            specifications.add(specification);
-        }
-        if (request.getStart() != null && request.getEnd() != null) {
-            Specification<Event> specification = EventSpecifications.startAndEnd(request.getStart(), request.getEnd());
-            specifications.add(specification);
-        } else {
-            Specification<Event> specification = EventSpecifications.defaultStartAndEnd();
-            specifications.add(specification);
-        }
-        if (request.getOnlyAvailable()) {
-            Specification<Event> specification = EventSpecifications.onlyAvailable();
-            specifications.add(specification);
-        }
-        if (!CollectionUtils.isEmpty(request.getCategories())) {
-            Specification<Event> specification = EventSpecifications.categories(request.getCategories());
-            specifications.add(specification);
-        }
-        return specifications;
-    }
 
-    private List<Specification<Event>> getAdminRequestSpecification(GetEventsAdminRequest request) {
-        ArrayList<Specification<Event>> specifications = new ArrayList<>();
-        if (!CollectionUtils.isEmpty(request.getCategories())) {
-            Specification<Event> specification = EventSpecifications.categories(request.getCategories());
-            specifications.add(specification);
-        }
-        if (!CollectionUtils.isEmpty(request.getUsers())) {
-            Specification<Event> specification = EventSpecifications.users(request.getUsers());
-            specifications.add(specification);
-        }
-        if (request.getStart() != null && request.getEnd() != null) {
-            Specification<Event> specification = EventSpecifications.startAndEnd(request.getStart(), request.getEnd());
-            specifications.add(specification);
-        } else {
-            Specification<Event> specification = EventSpecifications.defaultStartAndEnd();
-            specifications.add(specification);
-        }
-        return specifications;
-    }
-
-    private void checkRejectingAction(UpdateEventAdminRequest updateRequest, Event event) {
+    private void validateRejectingAction(UpdateEventAdminRequest updateRequest, Event event) {
         if (event.getState().equals(EventState.PUBLISHED) &&
             updateRequest.getStateAction().equals(UpdateEventAdminAction.REJECT_EVENT)) {
             throw new ConflictException("Cannot reject the event because it's not in the right state: CANCELED");
         }
     }
 
-    private void checkPublishingAction(UpdateEventAdminRequest updateRequest, Event event) {
+    private void validatePublishingAction(UpdateEventAdminRequest updateRequest, Event event) {
         if (!event.getState().equals(EventState.PENDING) &&
             updateRequest.getStateAction().equals(UpdateEventAdminAction.PUBLISH_EVENT)) {
             throw new ConflictException("Cannot publish the event because it's not in the right state: PUBLISHED");
         }
     }
 
-    private void checkStartAndPublishDateDuration(Event event) {
+    private void validateStartAndPublishDateDuration(Event event) {
         // if it is first time of event publishing
         if (event.getPublishedOn() == null) {
             return;
