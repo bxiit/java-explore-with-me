@@ -1,23 +1,22 @@
 package ru.practicum.explorewithme.service.util;
 
-import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
+import org.springframework.boot.jackson.JsonComponent;
 
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 
+import static ru.practicum.explorewithme.service.util.AppConstants.DATE_TIME_FORMATTER;
+
+@JsonComponent
 public class InstantStringDeserializer extends JsonDeserializer<Instant> {
 
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter
-            .ofPattern("yyyy-MM-dd HH:mm:ss");
-
     @Override
-    public Instant deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JacksonException {
+    public Instant deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         return parseStringToInstant(p.getValueAsString());
     }
 
