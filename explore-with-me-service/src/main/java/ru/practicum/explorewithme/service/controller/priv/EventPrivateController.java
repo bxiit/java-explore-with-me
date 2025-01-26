@@ -1,4 +1,4 @@
-package ru.practicum.explorewithme.service.controller;
+package ru.practicum.explorewithme.service.controller.priv;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,16 +18,15 @@ import ru.practicum.explorewithme.service.dto.event.EventRequestStatusUpdateResu
 import ru.practicum.explorewithme.service.dto.event.EventShortDto;
 import ru.practicum.explorewithme.service.dto.event.NewEventDto;
 import ru.practicum.explorewithme.service.dto.event.UpdateEventUserRequest;
-import ru.practicum.explorewithme.service.dto.request.ParticipationRequestDto;
-import ru.practicum.explorewithme.service.service.UserService;
+import ru.practicum.explorewithme.service.service.EventService;
 
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/users")
-public class UserController {
-    private final UserService userService;
+public class EventPrivateController {
+    private final EventService eventService;
 
     @GetMapping("/{userId}/events")
     public List<EventShortDto> get(
@@ -35,13 +34,13 @@ public class UserController {
             @RequestParam(value = "from", defaultValue = "0") Integer from,
             @RequestParam(value = "size", defaultValue = "10") Integer size
     ) {
-        return userService.getUserEvents(userId, from, size);
+        return eventService.getUsersEvents(userId, from, size);
     }
 
     @PostMapping("/{userId}/events")
     @ResponseStatus(HttpStatus.CREATED)
     public EventFullDto save(@PathVariable("userId") Long userId, @RequestBody @Valid NewEventDto request) {
-        return userService.saveNewEvent(userId, request);
+        return eventService.save(userId, request);
     }
 
     @GetMapping("/{userId}/events/{eventId}")
@@ -49,7 +48,7 @@ public class UserController {
             @PathVariable Long eventId,
             @PathVariable Long userId
     ) {
-        return userService.getEvent(userId, eventId);
+        return eventService.getEvent(userId, eventId);
     }
 
     @PatchMapping("/{userId}/events/{eventId}")
@@ -57,15 +56,7 @@ public class UserController {
             @PathVariable("userId") Long userId,
             @PathVariable("eventId") Long eventId,
             @RequestBody @Valid UpdateEventUserRequest request) {
-        return userService.editEvent(userId, eventId, request);
-    }
-
-    @GetMapping("/{userId}/events/{eventId}/requests")
-    public List<ParticipationRequestDto> getRequests(
-            @PathVariable("eventId") Long eventId,
-            @PathVariable("userId") Long userId
-    ) {
-        return userService.getRequests(userId, eventId);
+        return eventService.edit(userId, eventId, request);
     }
 
     //Изменение статуса (подтверждена, отменена) заявок на участие в событии текущего пользователя
@@ -75,30 +66,6 @@ public class UserController {
             @PathVariable("userId") Long userId,
             @RequestBody(required = false) @Valid EventRequestStatusUpdateRequest request
     ) {
-        return userService.updateEventParticipationStatus(userId, eventId, request);
-    }
-
-    // Private: Запросы на участие
-    @GetMapping("/{userId}/requests")
-    public List<ParticipationRequestDto> getRequests(
-            @PathVariable("userId") Long userId
-    ) {
-        return userService.getUserRequests(userId);
-    }
-
-    @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping("/{userId}/requests")
-    public ParticipationRequestDto saveParticipationRequest(
-            @PathVariable("userId") Long userId,
-            @RequestParam("eventId") Long eventId
-    ) {
-        return userService.saveParticipationRequest(userId, eventId);
-    }
-
-    @PatchMapping("/{userId}/requests/{requestId}/cancel")
-    public ParticipationRequestDto cancelRequest(
-            @PathVariable("requestId") Long requestId, @PathVariable("userId") Long userId
-    ) {
-        return userService.cancelRequest(userId, requestId);
+        return eventService.updateParticipationStatus(userId, eventId, request);
     }
 }

@@ -1,37 +1,36 @@
 package ru.practicum.explorewithme.service.service;
 
-import ru.practicum.explorewithme.service.dto.event.GetEventsAdminRequest;
-import ru.practicum.explorewithme.service.dto.event.GetEventsUserRequest;
-import ru.practicum.explorewithme.service.dto.event.UpdateEventAdminRequest;
-import ru.practicum.explorewithme.service.dto.request.ParticipationRequestDto;
 import ru.practicum.explorewithme.service.dto.event.EventFullDto;
 import ru.practicum.explorewithme.service.dto.event.EventRequestStatusUpdateRequest;
 import ru.practicum.explorewithme.service.dto.event.EventRequestStatusUpdateResult;
 import ru.practicum.explorewithme.service.dto.event.EventShortDto;
+import ru.practicum.explorewithme.service.dto.event.GetEventsAdminRequest;
+import ru.practicum.explorewithme.service.dto.event.GetEventsUserRequest;
 import ru.practicum.explorewithme.service.dto.event.NewEventDto;
+import ru.practicum.explorewithme.service.dto.event.UpdateEventAdminRequest;
 import ru.practicum.explorewithme.service.dto.event.UpdateEventUserRequest;
-import ru.practicum.explorewithme.service.entity.User;
+import ru.practicum.explorewithme.service.dto.request.ParticipationRequestDto;
 
 import java.util.List;
 
 public interface EventService {
-    List<EventShortDto> getUsersEvents(User user, int from, int size);
+    List<EventShortDto> getUsersEvents(Long user, int from, int size);
 
-    EventFullDto save(User user, NewEventDto request);
+    EventFullDto save(Long user, NewEventDto request);
 
-    EventFullDto getEvent(User user, Long eventId);
+    EventFullDto getEvent(Long userId, Long eventId);
 
-    EventFullDto edit(User user, Long eventId, UpdateEventUserRequest request);
+    EventFullDto edit(Long userId, Long eventId, UpdateEventUserRequest request);
 
-    List<ParticipationRequestDto> getRequests(User user, Long eventId);
+    ParticipationRequestDto saveParticipationRequest(Long userId, Long eventId);
 
-    ParticipationRequestDto saveParticipationRequest(User user, Long eventId);
+    EventRequestStatusUpdateResult updateParticipationStatus(Long userId, Long eventId, EventRequestStatusUpdateRequest request);
 
-    EventRequestStatusUpdateResult updateParticipationStatus(User user, Long eventId, EventRequestStatusUpdateRequest request);
+    List<ParticipationRequestDto> getUserRequests(Long userId);
 
-    List<ParticipationRequestDto> getUserRequests(User user);
+    List<ParticipationRequestDto> getRequests(Long userId, Long eventId);
 
-    ParticipationRequestDto cancelRequest(User user, Long requestId);
+    ParticipationRequestDto cancelRequest(Long userId, Long requestId);
 
     List<EventShortDto> get(GetEventsUserRequest request);
 

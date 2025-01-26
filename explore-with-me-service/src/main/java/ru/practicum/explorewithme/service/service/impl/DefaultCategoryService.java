@@ -49,7 +49,7 @@ public class DefaultCategoryService implements CategoryService {
     @Override
     @Transactional
     public CategoryDto edit(Long catId, CategoryDto request) {
-        Category category = categoryRepository.safeFetch(catId);
+        Category category = fetchCategory(catId);
         category = categoryMapper.updateFields(category, request);
         return categoryMapper.toDto(category);
     }
@@ -68,7 +68,8 @@ public class DefaultCategoryService implements CategoryService {
     }
 
     private Category fetchCategory(Long catId) {
-        return categoryRepository.safeFetch(catId);
+        return categoryRepository.findById(catId)
+                .orElseThrow(() -> new NotFoundException(Category.class, catId));
     }
 
     private void checkForEmptyCategory(Long catId) {

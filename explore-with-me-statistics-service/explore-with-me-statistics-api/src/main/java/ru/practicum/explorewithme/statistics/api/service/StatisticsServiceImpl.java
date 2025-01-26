@@ -37,9 +37,7 @@ public class StatisticsServiceImpl implements StatisticsService {
     public List<ViewStats> get(GetViewStatsRequest request) throws MethodArgumentNotValidException {
         List<ViewStats> stats = new ArrayList<>();
         boolean unique = request.getUnique() != null && request.getUnique();
-        if (request.getStart().isAfter(request.getEnd())) {
-            throw new MethodArgumentNotValidException(null, new BeanPropertyBindingResult(new Object(), "request"));
-        }
+        validateStartAndEndDate(request);
 
         if (!unique && request.getUris() == null) {
             stats = statisticsRepository.findByStartAndEnd(toInstant(request.getStart()), toInstant(request.getEnd()));
@@ -54,6 +52,12 @@ public class StatisticsServiceImpl implements StatisticsService {
             stats = statisticsRepository.findUniqueIpWithUris(toInstant(request.getStart()), toInstant(request.getEnd()), request.getUris());
         }
         return stats;
+    }
+
+    private void validateStartAndEndDate(GetViewStatsRequest request) throws MethodArgumentNotValidException {
+        if (request.getStart().isAfter(request.getEnd())) {
+            throw new MethodArgumentNotValidException(null, new BeanPropertyBindingResult(new Object(), "request"));
+        }
     }
 
     private Instant toInstant(LocalDateTime ldt) {

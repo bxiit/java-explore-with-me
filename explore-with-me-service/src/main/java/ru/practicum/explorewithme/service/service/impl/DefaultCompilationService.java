@@ -3,7 +3,6 @@ package ru.practicum.explorewithme.service.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -17,7 +16,6 @@ import ru.practicum.explorewithme.service.mapper.CompilationMapper;
 import ru.practicum.explorewithme.service.repository.CompilationRepository;
 import ru.practicum.explorewithme.service.repository.EventRepository;
 import ru.practicum.explorewithme.service.service.CompilationService;
-import ru.practicum.explorewithme.service.specs.CompilationSpecification;
 
 import java.util.List;
 
@@ -31,13 +29,16 @@ public class DefaultCompilationService implements CompilationService {
 
     @Override
     public List<CompilationDto> get(Boolean pinned, int from, int size) {
-        Specification<Compilation> specification = null;
+        PageRequest pageable = PageRequest.of(from, size);
         if (pinned != null) {
-            specification = CompilationSpecification.pinned(pinned);
+            return compilationRepository.findAllByPinned(pinned, pageable).stream()
+                    .map(mapper::toDto)
+                    .toList();
+        } else {
+            return compilationRepository.findAll(pageable).stream()
+                    .map(mapper::toDto)
+                    .toList();
         }
-        return compilationRepository.findAll(specification, PageRequest.of(from, size)).stream()
-                .map(mapper::toDto)
-                .toList();
     }
 
     @Override
@@ -70,7 +71,7 @@ public class DefaultCompilationService implements CompilationService {
     @Transactional
     public CompilationDto updateCompilation(Long compId, UpdateCompilationRequest request) {
         log.debug("Updating compilation with id: {}, request: {}", compId, request);
-        Compilation compilation = compilationRepository.safeFetch(compId);
+        Compilation compilation = fetchCompilation(compId);
         if (!CollectionUtils.isEmpty(request.getEvents())) {
             List<Event> events = eventRepository.findAllById(request.getEvents());
             compilation.addEvents(events);
@@ -80,6 +81,7 @@ public class DefaultCompilationService implements CompilationService {
     }
 
     private Compilation fetchCompilation(Long compId) {
-        return compilationRepository.safeFetch(compId);
+        return compilationRepository.findById(compId)
+                .orElseThrow(() -> new NotFoundException(Compilation.class, compId));
     }
 }

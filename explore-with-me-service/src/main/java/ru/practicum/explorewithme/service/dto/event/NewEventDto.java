@@ -1,5 +1,6 @@
 package ru.practicum.explorewithme.service.dto.event;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -7,14 +8,13 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 import ru.practicum.explorewithme.service.entity.Location;
 import ru.practicum.explorewithme.service.validation.MinDuration;
-import ru.practicum.explorewithme.service.validation.NotOnlySpace;
 
 import java.time.Instant;
 
 @Data
 public class NewEventDto {
     @NotNull
-    @NotOnlySpace
+    @NotBlank
     @Size(min = 20, max = 2000)
     private String annotation;
 
@@ -22,7 +22,7 @@ public class NewEventDto {
     private Long category;
 
     @NotNull
-    @NotOnlySpace
+    @NotBlank
     @Size(min = 20, max = 7000)
     private String description;
 
@@ -40,7 +40,7 @@ public class NewEventDto {
     private Boolean requestModeration = true;
 
     @NotEmpty
-    @NotOnlySpace
+    @NotBlank
     @Size(min = 3, max = 120)
     private String title;
 }

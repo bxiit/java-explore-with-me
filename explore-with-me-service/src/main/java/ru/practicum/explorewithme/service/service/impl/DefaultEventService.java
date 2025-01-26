@@ -30,6 +30,7 @@ import ru.practicum.explorewithme.service.mapper.ParticipationRequestMapper;
 import ru.practicum.explorewithme.service.repository.CategoryRepository;
 import ru.practicum.explorewithme.service.repository.EventRepository;
 import ru.practicum.explorewithme.service.repository.ParticipationRequestRepository;
+import ru.practicum.explorewithme.service.repository.UserRepository;
 import ru.practicum.explorewithme.service.service.EventService;
 import ru.practicum.explorewithme.statistics.client.StatisticsClient;
 import ru.practicum.explorewithme.statistics.contract.dto.ViewStats;
@@ -57,11 +58,13 @@ public class DefaultEventService implements EventService {
     private final EventMapper eventMapper;
     private final ParticipationRequestMapper requestMapper;
     private final StatisticsClient statisticsClient;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional
-    public EventFullDto save(User user, NewEventDto request) {
+    public EventFullDto save(Long userId, NewEventDto request) {
         Category category = fetchCategory(request.getCategory());
+        User user = fetchUser(userId);
         Event event = eventMapper.toNewEvent(user, category, request);
         event = eventRepository.save(event);
         return eventMapper.toFullDto(event);
@@ -69,13 +72,14 @@ public class DefaultEventService implements EventService {
 
     @Override
     @Transactional
-    public ParticipationRequestDto saveParticipationRequest(User user, Long eventId) {
-        if (requestRepository.existsByRequesterIdAndEventId(user.getId(), eventId)) {
+    public ParticipationRequestDto saveParticipationRequest(Long userId, Long eventId) {
+        User user = fetchUser(userId);
+        if (requestRepository.existsByRequesterIdAndEventId(userId, eventId)) {
             throw new ConflictException("Integrity constraint has been violated");
         }
 
         Event event = fetchEvent(eventId);
-        validateEventParticipationPreconditions(user, event);
+        validateEventParticipationPreconditions(userId, event);
 
         ParticipationStatus participantStatus = determineParticipationStatus(event);
         ParticipationRequest participationRequest = requestMapper.toNewRequest(event, user, participantStatus);
@@ -88,7 +92,7 @@ public class DefaultEventService implements EventService {
     @Override
     @Transactional
     public EventRequestStatusUpdateResult updateParticipationStatus(
-            User user, Long eventId, EventRequestStatusUpdateRequest updateRequest
+            Long userId, Long eventId, EventRequestStatusUpdateRequest updateRequest
     ) {
         // Время создания запроса на участие в событии после подтверждения
         // должно соответствовать времени создания запроса на участие в событии указанного пользователя до подтверждения
@@ -112,16 +116,29 @@ public class DefaultEventService implements EventService {
     }
 
     @Override
-    public List<ParticipationRequestDto> getUserRequests(User user) {
-        return requestRepository.findAllByRequesterId(user.getId()).stream()
+    public List<ParticipationRequestDto> getUserRequests(Long userId) {
+        checkUserExistence(userId);
+        return requestRepository.findAllByRequesterId(userId).stream()
+                .map(requestMapper::toDto)
+                .toList();
+    }
+
+    @Override
+    public List<ParticipationRequestDto> getRequests(Long userId, Long eventId) {
+        boolean exists = eventRepository.existsByInitiatorIdAndId(userId, eventId);
+        if (!exists) {
+            throw new NotFoundException(Event.class, eventId);
+        }
+        return requestRepository.findAllByEventId(eventId).stream()
                 .map(requestMapper::toDto)
                 .toList();
     }
 
     @Override
     @Transactional
-    public ParticipationRequestDto cancelRequest(User user, Long requestId) {
-        ParticipationRequest participationRequest = requestRepository.findByIdAndRequesterId(requestId, user.getId())
+    public ParticipationRequestDto cancelRequest(Long userId, Long requestId) {
+        checkUserExistence(userId);
+        ParticipationRequest participationRequest = requestRepository.findByIdAndRequesterId(requestId, userId)
                 .orElseThrow(() -> new NotFoundException(ParticipationRequest.class, requestId));
         participationRequest.setStatus(ParticipationStatus.CANCELED);
         participationRequest = requestRepository.save(participationRequest);
@@ -154,7 +171,7 @@ public class DefaultEventService implements EventService {
     @Override
     @Transactional
     public EventFullDto updateEvent(Long eventId, UpdateEventAdminRequest updateRequest) {
-        final Event event = eventRepository.safeFetch(eventId);
+        final Event event = fetchEvent(eventId);
 
         validateStartAndPublishDateDuration(event);
         validatePublishingAction(updateRequest, event);
@@ -180,33 +197,24 @@ public class DefaultEventService implements EventService {
     }
 
     @Override
-    public List<EventShortDto> getUsersEvents(User user, int from, int size) {
-        return eventRepository.findAllByInitiatorId(user.getId(), PageRequest.of(from, size)).stream()
+    public List<EventShortDto> getUsersEvents(Long userId, int from, int size) {
+        checkUserExistence(userId);
+        return eventRepository.findAllByInitiatorId(userId, PageRequest.of(from, size)).stream()
                 .map(eventMapper::toShortDto)
                 .toList();
     }
 
     @Override
-    public EventFullDto getEvent(User user, Long eventId) {
-        return eventRepository.findByInitiatorIdAndId(user.getId(), eventId)
+    public EventFullDto getEvent(Long userId, Long eventId) {
+        checkUserExistence(userId);
+        return eventRepository.findByInitiatorIdAndId(userId, eventId)
                 .map(eventMapper::toFullDto)
                 .orElseThrow(() -> new NotFoundException(Event.class, eventId));
     }
 
     @Override
-    public List<ParticipationRequestDto> getRequests(User user, Long eventId) {
-        boolean exists = eventRepository.existsByInitiatorIdAndId(user.getId(), eventId);
-        if (!exists) {
-            throw new NotFoundException(Event.class, eventId);
-        }
-        return requestRepository.findAllByEventId(eventId).stream()
-                .map(requestMapper::toDto)
-                .toList();
-    }
-
-    @Override
     @Transactional
-    public EventFullDto edit(User user, Long eventId, UpdateEventUserRequest updateRequest) {
+    public EventFullDto edit(Long userId, Long eventId, UpdateEventUserRequest updateRequest) {
         final Event event = fetchEvent(eventId);
         validateEventStateForUpdate(event);
 
@@ -229,6 +237,12 @@ public class DefaultEventService implements EventService {
         }
     }
 
+    private void checkUserExistence(Long userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new NotFoundException(User.class, userId);
+        }
+    }
+
     private Map<ParticipationStatus, List<ParticipationRequest>> processEventParticipationRequests(
             EventRequestStatusUpdateRequest updateRequest,
             List<ParticipationRequest> participationRequests,
@@ -245,12 +259,19 @@ public class DefaultEventService implements EventService {
                 }));
     }
 
-    private Event fetchEvent(Long eventId) {
-        return eventRepository.safeFetch(eventId);
+    private User fetchUser(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(User.class, id));
+    }
+
+    private Event fetchEvent(Long id) {
+        return eventRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(Event.class, id));
     }
 
     private Category fetchCategory(Long id) {
-        return categoryRepository.safeFetch(id);
+        return categoryRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(Category.class, id));
     }
 
     private Long getViews(LocalDateTime start, LocalDateTime end, String uri) {
@@ -267,12 +288,11 @@ public class DefaultEventService implements EventService {
         }
     }
 
-
-    private void validateEventParticipationPreconditions(User user, Event event) {
+    private void validateEventParticipationPreconditions(Long userId, Event event) {
         if (!event.isPublished()) {
             throw new ConflictException("Cannot request to not published event");
         }
-        if (event.getInitiator().getId().equals(user.getId())) {
+        if (event.getInitiator().getId().equals(userId)) {
             throw new ConflictException("Initiator cannot request to his own event");
         }
         if (isLimitReached(event)) {
@@ -302,7 +322,6 @@ public class DefaultEventService implements EventService {
 
         return count.equals(event.getParticipantLimit());
     }
-
 
     private void validateRejectingAction(UpdateEventAdminRequest updateRequest, Event event) {
         if (event.getState().equals(EventState.PUBLISHED) &&
