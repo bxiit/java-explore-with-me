@@ -3,6 +3,8 @@ package ru.practicum.explorewithme.statistics.api.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import ru.practicum.explorewithme.statistics.api.dto.GetViewStatsRequest;
 import ru.practicum.explorewithme.statistics.api.entity.Endpoint;
 import ru.practicum.explorewithme.statistics.api.mapper.EndpointMapper;
@@ -32,9 +34,12 @@ public class StatisticsServiceImpl implements StatisticsService {
     }
 
     @Override
-    public List<ViewStats> get(GetViewStatsRequest request) {
+    public List<ViewStats> get(GetViewStatsRequest request) throws MethodArgumentNotValidException {
         List<ViewStats> stats = new ArrayList<>();
         boolean unique = request.getUnique() != null && request.getUnique();
+        if (request.getStart().isAfter(request.getEnd())) {
+            throw new MethodArgumentNotValidException(null, new BeanPropertyBindingResult(new Object(), "request"));
+        }
 
         if (!unique && request.getUris() == null) {
             stats = statisticsRepository.findByStartAndEnd(toInstant(request.getStart()), toInstant(request.getEnd()));
