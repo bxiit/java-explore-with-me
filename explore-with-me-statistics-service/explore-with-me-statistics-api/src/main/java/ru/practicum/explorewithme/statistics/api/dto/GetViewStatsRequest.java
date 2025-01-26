@@ -14,5 +14,5 @@ public class GetViewStatsRequest {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime end;
     private String[] uris;
-    private boolean unique;
+    private Boolean unique;
 }

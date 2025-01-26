@@ -34,16 +34,18 @@ public class StatisticsServiceImpl implements StatisticsService {
     @Override
     public List<ViewStats> get(GetViewStatsRequest request) {
         List<ViewStats> stats = new ArrayList<>();
-        if (!request.isUnique() && request.getUris() == null) {
+        boolean unique = request.getUnique() != null && request.getUnique();
+
+        if (!unique && request.getUris() == null) {
             stats = statisticsRepository.findByStartAndEnd(toInstant(request.getStart()), toInstant(request.getEnd()));
         }
-        if (!request.isUnique() && request.getUris() != null) {
+        if (!unique && request.getUris() != null) {
             stats = statisticsRepository.findWithUris(toInstant(request.getStart()), toInstant(request.getEnd()), request.getUris());
         }
-        if (request.isUnique() && request.getUris() == null) {
+        if (unique && request.getUris() == null) {
             stats = statisticsRepository.findUniqueIp(toInstant(request.getStart()), toInstant(request.getEnd()));
         }
-        if (request.isUnique() && request.getUris() != null) {
+        if (unique && request.getUris() != null) {
             stats = statisticsRepository.findUniqueIpWithUris(toInstant(request.getStart()), toInstant(request.getEnd()), request.getUris());
         }
         return stats;
