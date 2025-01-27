@@ -20,9 +20,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
+            <groupId>ru.practicum</groupId>
+            <artifactId>explore-with-me-statistics-contract</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

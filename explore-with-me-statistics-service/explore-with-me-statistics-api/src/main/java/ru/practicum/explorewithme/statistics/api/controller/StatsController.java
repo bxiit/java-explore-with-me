@@ -1,7 +1,9 @@
 package ru.practicum.explorewithme.statistics.api.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,9 +28,7 @@ public class StatsController {
     }
 
     @GetMapping("/stats")
-    public List<ViewStats> getStats(
-            GetViewStatsRequest request
-    ) {
+    public List<ViewStats> getStats(@Valid GetViewStatsRequest request) throws MethodArgumentNotValidException {
         return statisticsService.get(request);
     }
 }
