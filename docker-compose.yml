@@ -45,3 +45,9 @@ services:
       POSTGRES_DB: ewm
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+
+  ewm-kafka:
+    container_name: ewm_kafka
+    image: bashj79/kafka-kraft
+    ports:
+      - "9092:9092"
