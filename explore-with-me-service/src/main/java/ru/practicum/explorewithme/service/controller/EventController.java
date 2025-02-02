@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,8 +23,10 @@ import ru.practicum.explorewithme.service.dto.rate.EventFeedbackShortDto;
 import ru.practicum.explorewithme.service.dto.rate.EventRate;
 import ru.practicum.explorewithme.service.service.EventService;
 import ru.practicum.explorewithme.service.service.RateService;
-import ru.practicum.explorewithme.statistics.client.StatisticsClient;
+import ru.practicum.explorewithme.statistics.contract.AppConstants;
+import ru.practicum.explorewithme.statistics.contract.dto.EndpointHit;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -32,18 +35,17 @@ import java.util.List;
 @RequestMapping("/events")
 public class EventController {
     private final EventService eventService;
-    private final StatisticsClient statisticsClient;
     private final RateService rateService;
+    private final KafkaTemplate<String, EndpointHit> kafkaTemplate;
 
     @GetMapping
     public List<EventShortDto> get(@Valid GetEventsUserRequest request, HttpServletRequest requestInfo) {
-        statisticsClient.hit(requestInfo);
+        sendEndpointHit(requestInfo);
         return eventService.get(request);
     }
-
     @GetMapping("/{id}")
     public EventFullDto get(@PathVariable("id") Long id, HttpServletRequest requestInfo) {
-        statisticsClient.hit(requestInfo);
+        sendEndpointHit(requestInfo);
         return eventService.get(id);
     }
 
@@ -61,5 +63,13 @@ public class EventController {
     @GetMapping("/{eventId}/feedbacks/ratings")
     public EventRate getEventRating(@PathVariable Long eventId) {
         return rateService.getEventRating(eventId);
+    }
+
+    private void sendEndpointHit(HttpServletRequest requestInfo) {
+        EndpointHit endpointHit = new EndpointHit(
+                "ewm-main-service", requestInfo.getRequestURI(), requestInfo.getRemoteAddr(),
+                AppConstants.DATE_TIME_FORMATTER.format(LocalDateTime.now())
+        );
+        kafkaTemplate.send("statistics", endpointHit);
     }
 }
