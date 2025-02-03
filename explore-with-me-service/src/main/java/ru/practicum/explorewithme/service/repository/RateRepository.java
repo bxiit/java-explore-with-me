@@ -13,5 +13,5 @@ public interface RateRepository extends JpaRepository<ru.practicum.explorewithme
 
     List<ru.practicum.explorewithme.service.entity.EventFeedback> findAllByEventId(Long eventId);
 
-    Optional<ru.practicum.explorewithme.service.entity.EventFeedback> findByEventIdAndUserId(Long event_id, Long user_id);
+    Optional<ru.practicum.explorewithme.service.entity.EventFeedback> findByEventIdAndUserId(Long eventId, Long userId);
 }

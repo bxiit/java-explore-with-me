@@ -15,6 +15,8 @@ public interface RateMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "modifiedAt", ignore = true)
     EventFeedback toEntity(EventFeedbackDto eventFeedbackDto, Event event, User user);
+
     EventFeedbackFullDto toRateFullDto(EventFeedback eventFeedback);
+
     EventFeedbackShortDto toRateShortDto(EventFeedback eventFeedback);
 }
