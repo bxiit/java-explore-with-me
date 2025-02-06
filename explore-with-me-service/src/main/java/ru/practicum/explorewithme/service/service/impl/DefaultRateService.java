@@ -8,7 +8,7 @@ import ru.practicum.explorewithme.service.dto.rate.EventFeedbackFullDto;
 import ru.practicum.explorewithme.service.dto.rate.EventFeedbackShortDto;
 import ru.practicum.explorewithme.service.dto.rate.EventRate;
 import ru.practicum.explorewithme.service.entity.Event;
-import ru.practicum.explorewithme.service.entity.EventFeedback;
+import ru.practicum.explorewithme.service.entity.Rate;
 import ru.practicum.explorewithme.service.entity.User;
 import ru.practicum.explorewithme.service.enums.Feedback;
 import ru.practicum.explorewithme.service.exception.NotFoundException;
@@ -38,21 +38,21 @@ public class DefaultRateService implements RateService {
 
     @Override
     public EventFeedbackFullDto saveEventFeedback(EventFeedbackDto eventFeedbackDto) {
-        Optional<EventFeedback> maybeEventRate = rateRepository.findByEventIdAndUserId(eventFeedbackDto.getEventId(), eventFeedbackDto.getUserId());
+        Optional<Rate> maybeEventRate = rateRepository.findByEventIdAndUserId(eventFeedbackDto.getEventId(), eventFeedbackDto.getUserId());
         if (maybeEventRate.isPresent()) {
-            EventFeedback existingEventFeedback = maybeEventRate.get();
-            existingEventFeedback.setFeedback(eventFeedbackDto.getFeedback());
-            existingEventFeedback.modify();
-            rateRepository.save(existingEventFeedback);
-            return rateMapper.toRateFullDto(existingEventFeedback);
+            Rate existingRate = maybeEventRate.get();
+            existingRate.setFeedback(eventFeedbackDto.getFeedback());
+            existingRate.modify();
+            rateRepository.save(existingRate);
+            return rateMapper.toRateFullDto(existingRate);
         }
         Event event = fetchEvent(eventFeedbackDto.getEventId());
         User user = fetchUser(eventFeedbackDto.getUserId());
 
-        EventFeedback eventFeedback = rateMapper.toEntity(eventFeedbackDto, event, user);
+        Rate rate = rateMapper.toEntity(eventFeedbackDto, event, user);
 
-        rateRepository.save(eventFeedback);
-        return rateMapper.toRateFullDto(eventFeedback);
+        rateRepository.save(rate);
+        return rateMapper.toRateFullDto(rate);
     }
 
     @Override
@@ -64,9 +64,25 @@ public class DefaultRateService implements RateService {
 
     @Override
     public EventRate getEventRating(Long eventId) {
-        Map<Feedback, List<EventFeedback>> feedbacksMap = rateRepository.findAllByEventId(eventId).stream()
-                .collect(Collectors.groupingBy(EventFeedback::getFeedback));
+        Map<Feedback, List<Rate>> feedbacksMap = rateRepository.findAllByEventId(eventId).stream()
+                .collect(Collectors.groupingBy(Rate::getFeedback));
 
+        return getEventRate(eventId, feedbacksMap);
+    }
+
+    @Override
+    public List<EventRate> getEventsRatings(List<Long> eventIds) {
+        Map<Long, Map<Feedback, List<Rate>>> eventFeedbacksMap = rateRepository.findAllByEventIdIn(eventIds).stream()
+                .collect(Collectors.groupingBy(
+                        rate -> rate.getEvent().getId(),
+                        Collectors.groupingBy(Rate::getFeedback)
+                ));
+        return eventFeedbacksMap.entrySet().stream()
+                .map(entry -> getEventRate(entry.getKey(), entry.getValue()))
+                .toList();
+    }
+
+    private EventRate getEventRate(Long eventId, Map<Feedback, List<Rate>> feedbacksMap) {
         List<EventFeedbackShortDto> likes = feedbacksMap.getOrDefault(LIKE, emptyList()).stream()
                 .map(rateMapper::toRateShortDto)
                 .collect(Collectors.toList());
@@ -79,10 +95,8 @@ public class DefaultRateService implements RateService {
         int dislikesCount = dislikes.size();
 
         int ratingsCount = likesCount + dislikesCount;
-        // 1000 f  // 200
-        // 100 %   // X %
         double rating = ((double) (likesCount * 100) / ratingsCount);
-        return new EventRate(likes, dislikes, ratingsCount, rating);
+        return new EventRate(eventId, likes, dislikes, ratingsCount, rating);
     }
 
     private Event fetchEvent(Long eventId) {

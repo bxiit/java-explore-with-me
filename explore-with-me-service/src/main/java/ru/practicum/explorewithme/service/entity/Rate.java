@@ -25,7 +25,7 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id", callSuper = false)
-public class EventFeedback extends BaseEntity {
+public class Rate extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

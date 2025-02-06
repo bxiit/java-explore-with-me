@@ -10,6 +10,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EventRate {
+    private Long eventId;
     private List<EventFeedbackShortDto> likes;
     private List<EventFeedbackShortDto> dislikes;
     private Integer ratingsCount;

@@ -15,6 +15,7 @@ import ru.practicum.explorewithme.service.dto.event.GetEventsUserRequest;
 import ru.practicum.explorewithme.service.dto.event.NewEventDto;
 import ru.practicum.explorewithme.service.dto.event.UpdateEventAdminRequest;
 import ru.practicum.explorewithme.service.dto.event.UpdateEventUserRequest;
+import ru.practicum.explorewithme.service.dto.rate.EventRate;
 import ru.practicum.explorewithme.service.dto.request.ParticipationRequestDto;
 import ru.practicum.explorewithme.service.entity.Category;
 import ru.practicum.explorewithme.service.entity.Event;
@@ -32,6 +33,7 @@ import ru.practicum.explorewithme.service.repository.EventRepository;
 import ru.practicum.explorewithme.service.repository.ParticipationRequestRepository;
 import ru.practicum.explorewithme.service.repository.UserRepository;
 import ru.practicum.explorewithme.service.service.EventService;
+import ru.practicum.explorewithme.service.service.RateService;
 import ru.practicum.explorewithme.statistics.client.StatisticsClient;
 import ru.practicum.explorewithme.statistics.contract.dto.ViewStats;
 
@@ -41,6 +43,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
@@ -59,6 +62,7 @@ public class DefaultEventService implements EventService {
     private final ParticipationRequestMapper requestMapper;
     private final StatisticsClient statisticsClient;
     private final UserRepository userRepository;
+    private final RateService rateService;
 
     @Override
     @Transactional
@@ -165,7 +169,9 @@ public class DefaultEventService implements EventService {
         );
         event.setViews(views);
         eventRepository.save(event);
-        return eventMapper.toFullDto(event);
+        EventFullDto eventFullDto = eventMapper.toFullDto(event);
+        eventFullDto.setRate(rateService.getEventRating(id));
+        return eventFullDto;
     }
 
     @Override
@@ -189,11 +195,19 @@ public class DefaultEventService implements EventService {
 
     @Override
     public List<EventFullDto> get(GetEventsAdminRequest request) {
-        return eventRepository.findAll(
+        List<EventFullDto> events = eventRepository.findAll(
                         Specification.allOf(getAdminRequestSpecification(request)),
                         request.getPageable()).stream()
                 .map(eventMapper::toFullDto)
                 .toList();
+
+        List<Long> eventsIds = events.stream().map(EventFullDto::getId).toList();
+        Map<Long, EventRate> eventRateMap = rateService.getEventsRatings(eventsIds).stream()
+                .collect(Collectors.toMap(EventRate::getEventId, Function.identity()));
+
+        events.forEach(event -> event.setRate(eventRateMap.get(event.getId())));
+
+        return events;
     }
 
     @Override
@@ -209,6 +223,10 @@ public class DefaultEventService implements EventService {
         checkUserExistence(userId);
         return eventRepository.findByInitiatorIdAndId(userId, eventId)
                 .map(eventMapper::toFullDto)
+                .map(event -> {
+                    event.setRate(rateService.getEventRating(eventId));
+                    return event;
+                })
                 .orElseThrow(() -> new NotFoundException(Event.class, eventId));
     }
 

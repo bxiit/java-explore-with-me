@@ -2,6 +2,7 @@ package ru.practicum.explorewithme.service.dto.event;
 
 import lombok.Data;
 import ru.practicum.explorewithme.service.dto.category.CategoryDto;
+import ru.practicum.explorewithme.service.dto.rate.EventRate;
 import ru.practicum.explorewithme.service.dto.user.UserShortDto;
 import ru.practicum.explorewithme.service.entity.Location;
 import ru.practicum.explorewithme.service.enums.EventState;
@@ -26,4 +27,5 @@ public class EventFullDto {
     private EventState state;
     private String title;
     private Long views;
+    private EventRate rate;
 }

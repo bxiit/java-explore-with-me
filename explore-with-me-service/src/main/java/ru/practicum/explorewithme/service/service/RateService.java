@@ -14,4 +14,6 @@ public interface RateService {
     List<EventFeedbackShortDto> getEventFeedbacks(Long eventId, Pageable pageable);
 
     EventRate getEventRating(Long eventId);
+
+    List<EventRate> getEventsRatings(List<Long> eventIds);
 }
