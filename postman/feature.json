@@ -91,13 +91,13 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/events/feedbacks",
+              "raw": "{{baseUrl}}/events/ratings",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "events",
-                "feedbacks"
+                "ratings"
               ]
             }
           },
@@ -182,13 +182,13 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/events/feedbacks",
+              "raw": "{{baseUrl}}/events/ratings",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "events",
-                "feedbacks"
+                "ratings"
               ]
             }
           },
@@ -250,6 +250,7 @@
                   "        const category = await api.addCategory(rnd.getCategory());\r",
                   "\r",
                   "        const event1 = await api.addEvent(user1.id, rnd.getEvent(category.id));\r",
+                  "        await api.publishEvent(event1.id);\r",
                   "\r",
                   "        const feedback1 = api.addEventFeedback(rnd.getLikeEventFeedback(event1.id, user2.id));\r",
                   "        const feedback2 = api.addEventFeedback(rnd.getLikeEventFeedback(event1.id, user1.id));\r",
@@ -290,8 +291,9 @@
                   "    pm.response.to.be.json;\r",
                   "});\r",
                   "\r",
-                  "pm.test(\"Ответ должен быть длиною в 2 элемента\", function () {\r",
-                  "    pm.expect(2).to.eql(pm.response.json().likes.length);\r",
+                  "pm.test(\"В ответе rate должно содержаться два лайка (likes)\", function () {\r",
+                  "     var responseJSON = pm.response.json();\r",
+                  "     pm.expect(responseJSON.rate.likes).to.be.an('array').that.has.lengthOf(2);\r",
                   "});"
                 ],
                 "type": "text/javascript",
@@ -303,15 +305,13 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/events/:eventId/feedbacks/ratings",
+              "raw": "{{baseUrl}}/events/:eventId",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "events",
-                ":eventId",
-                "feedbacks",
-                "ratings"
+                ":eventId"
               ],
               "variable": [
                 {
@@ -357,7 +357,7 @@
           "    }\r",
           "\r",
           "    async addEventFeedback(feedback, verbose = null) {\r",
-          "        return this.post(\"/events/feedbacks\", feedback, \"Ошибка при добавлении отзыва: \", verbose);\r",
+          "        return this.post(\"/events/ratings\", feedback, \"Ошибка при добавлении отзыва: \", verbose);\r",
           "    }\r",
           "\r",
           "    async publishParticipationRequest(eventId, userId, verbose = null) {\r",
