@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ewm-db-deployment-name
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ewm-db
+  template:
+    metadata:
+      labels:
+        app: ewm-db
+    spec:
+      containers:
+        - name: ewm-db
+          image: postgres:latest
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              value: postgres
+            - name: POSTGRES_DB
+              value: ewm
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ewm-db-service-name
+spec:
+  selector:
+    app: ewm-db
+  ports:
+    - port: 5432
+      targetPort: 5432
