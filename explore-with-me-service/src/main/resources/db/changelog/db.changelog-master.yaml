@@ -1,3 +1,5 @@
 databaseChangeLog:
   - include:
       file: db/changelog/changeset/V0001__create_tables.sql
+  - include:
+      file: db/changelog/changeset/V0002__create_feature_table.sql
